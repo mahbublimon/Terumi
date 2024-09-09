@@ -1,7 +1,7 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const { loadCommands, loadEvents } = require('./utils/loader');
+const { loadCommands, loadEvents } = require('./src/utils/loader');
 const mongoose = require('mongoose');
-require('dotenv').config();
+require('dotenv').config();  // Loads .env file
 
 const client = new Client({
     intents: [
@@ -18,8 +18,8 @@ client.buttons = new Collection(); // To manage button interactions
 client.slashCommands = new Collection();
 
 // Load commands and events
-loadCommands(client);
-loadEvents(client);
+loadCommands(client);  // Loads all commands from src/commands
+loadEvents(client);    // Loads all events from src/events
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
