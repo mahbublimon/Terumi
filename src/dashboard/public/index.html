@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bot Status Dashboard</title>
+        <link rel="stylesheet" href="/styles.css" />
+    </head>
+    <body>
+        <div class="container">
+            <h1>Tamaki Status</h1>
+            <p>
+                Below are the clusters and their statuses. Updates automatically
+                every 15 seconds.
+            </p>
+
+            <div class="statistics">
+                <div class="stat-box">
+                    <h2>SERVERS</h2>
+                    <p id="servers-count">Loading...</p>
+                </div>
+                <div class="stat-box">
+                    <h2>USERS</h2>
+                    <p id="users-count">Loading...</p>
+                </div>
+                <div class="stat-box">
+                    <h2>CHANNELS</h2>
+                    <p id="channels-count">Loading...</p>
+                </div>
+                <div class="stat-box">
+                    <h2>MESSAGES</h2>
+                    <p id="messages-rate">Loading...</p>
+                </div>
+            </div>
+        </div>
+        <script src="/script.js"></script>
+    </body>
+</html>
