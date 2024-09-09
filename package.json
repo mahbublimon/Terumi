@@ -1,7 +1,8 @@
 {
-  "name": "tamaki-discord-bot",
+  "name": "terumi",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "dashboard": "node src/dashboard.js"
