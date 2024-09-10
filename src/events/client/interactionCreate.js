@@ -4,21 +4,18 @@ module.exports = {
         if (interaction.isCommand()) {
             const command = client.slashCommands.get(interaction.commandName);
             if (!command) return;
+
             try {
                 await command.execute(interaction, client);
             } catch (error) {
                 console.error(error);
-                await interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
+                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
             }
         } else if (interaction.isButton()) {
-            const button = client.buttons.get(interaction.customId);
-            if (!button) return;
-            try {
-                await button.execute(interaction, client);
-            } catch (error) {
-                console.error(error);
-                await interaction.reply({ content: 'There was an error handling this button interaction!', ephemeral: true });
+            if (interaction.customId === 'create_ticket') {
+                const { handleTicketCreate } = require('../../utils/ticketHandler');
+                handleTicketCreate(interaction);
             }
         }
-    }
+    },
 };
