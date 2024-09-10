@@ -3,15 +3,14 @@ const Ticket = require('../models/Ticket');
 module.exports = {
     async handleTicketCreate(interaction) {
         const userId = interaction.user.id;
-        const existingTicket = await Ticket.findOne({ userId });
 
-        if (existingTicket) {
-            return interaction.reply('You already have an open ticket.');
-        }
+        // Create a new ticket in the database
+        const ticket = new Ticket({
+            userId,
+            channelId: null,  // This will be set after channel creation
+        });
 
-        const newTicket = new Ticket({ userId });
-        await newTicket.save();
-
+        // Create a new ticket channel for the user
         const channel = await interaction.guild.channels.create({
             name: `ticket-${interaction.user.username}`,
             type: 'GUILD_TEXT',
@@ -27,17 +26,11 @@ module.exports = {
             ],
         });
 
+        // Update ticket with channel ID and save to database
+        ticket.channelId = channel.id;
+        await ticket.save();
+
+        // Notify user in the newly created ticket channel
         await channel.send(`Welcome ${interaction.user}, a staff member will be with you shortly.`);
-        await interaction.reply({ content: 'Ticket created!', ephemeral: true });
-    },
-
-    async handleTicketClose(interaction) {
-        const userId = interaction.user.id;
-        const ticket = await Ticket.findOneAndDelete({ userId });
-
-        if (!ticket) return interaction.reply('No active ticket found.');
-
-        const channel = interaction.channel;
-        await channel.delete();
     }
 };
