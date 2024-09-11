@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const mongoose = require('mongoose');
+const express = require('express');  // Add Express for the web dashboard
 require('dotenv').config();
 
 mongoose.set('strictQuery', true);  // This line suppresses the deprecation warning
@@ -29,3 +30,16 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Login bot
 client.login(process.env.TOKEN);
+
+// Set up Express server for dashboard (if applicable)
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.get('/', (req, res) => {
+    res.send('Bot Dashboard is running');
+});
+
+// Start the dashboard server
+app.listen(PORT, () => {
+    console.log(`Dashboard running on port ${PORT}`);
+});
