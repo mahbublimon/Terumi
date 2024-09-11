@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const path = require('path');
 
-// Initialize Discord Client with necessary intents
+// Initialize Discord Client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -17,20 +17,20 @@ const client = new Client({
   ],
 });
 
-// Initialize Express app for the dashboard
+// Initialize Express App for Dashboard
 const app = express();
-const PORT = 3000;
+const PORT = 3000; // This is the port Express will run on (proxied by Nginx)
 
-// Serve static files (HTML, CSS, JS) for the dashboard
+// Serve static files for the dashboard
 app.use(express.static(path.join(__dirname, 'src/dashboard/public')));
 
-// Import and use dashboard API routes
+// Import dashboard routes
 const dashboardRoutes = require('./src/dashboard/routes/dashboard');
-app.use('/api', dashboardRoutes);
+app.use('/api', dashboardRoutes); // Serve API routes for stats
 
-// Start Express server for the dashboard
+// Start the dashboard server
 app.listen(PORT, () => {
-  console.log(`Dashboard running on http://localhost:${PORT}`);
+  console.log(`Dashboard running on port ${PORT}`);
 });
 
 // MongoDB connection
@@ -44,12 +44,12 @@ client.once('ready', () => {
   setPresence();
 });
 
-// Function to set bot presence/status
+// Set bot presence (status message)
 function setPresence() {
   client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
 }
 
-// Dynamic loading of commands and event handlers
+// Dynamic loading of commands and events
 const fs = require('fs');
 
 // Load command files dynamically
@@ -73,8 +73,8 @@ for (const file of eventFiles) {
   }
 }
 
-// Message handler logic for tracking and leveling system
-let messageCount = 0; // Track number of messages per minute
+// Message handling logic
+let messageCount = 0; // Track the number of messages per minute
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return; // Ignore bot messages
@@ -102,7 +102,7 @@ client.on('messageCreate', async (message) => {
 
 // Reset the message count every minute for tracking messages per minute
 setInterval(() => {
-  messageCount = 0; // Reset message count
+  messageCount = 0; // Reset message count every 60 seconds
 }, 60000);
 
 // Function to handle bot commands dynamically
@@ -120,7 +120,7 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-// Export the client and messageCount for the dashboard routes
+// Export the client and messageCount for use in the dashboard routes
 module.exports = { client, messageCount };
 
 // Log in to Discord using the bot token from .env
