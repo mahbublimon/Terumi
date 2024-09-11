@@ -1,4 +1,6 @@
 // src/commands/moderation/unmute.js
+const hasAdminPermissions = require('../../utils/permissionCheck');
+
 module.exports = {
   data: {
     name: 'unmute',
@@ -7,30 +9,25 @@ module.exports = {
       {
         name: 'user',
         type: 'USER',
-        description: 'The user to unmute',
+        description: 'User to unmute',
         required: true,
-      },
-      {
-        name: 'reason',
-        type: 'STRING',
-        description: 'The reason for unmuting',
-        required: false,
       },
     ],
   },
   async execute(interaction) {
-    const user = interaction.options.getMember('user');
-    const reason = interaction.options.getString('reason') || 'No reason provided';
-
-    if (!interaction.member.permissions.has('MODERATE_MEMBERS')) {
-      return interaction.reply('You do not have permission to use this command.');
+    if (!hasAdminPermissions(interaction.member)) {
+      return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
     }
 
-    try {
-      await user.timeout(null); // Removes the timeout
-      await interaction.reply(`${user.user.tag} has been unmuted for: ${reason}`);
-    } catch (error) {
-      await interaction.reply('Failed to unmute the user.');
+    const user = interaction.options.getUser('user');
+    const member = interaction.guild.members.cache.get(user.id);
+    const muteRole = interaction.guild.roles.cache.find(role => role.name === 'Muted');
+
+    if (!muteRole || !member.roles.cache.has(muteRole.id)) {
+      return interaction.reply('User is not muted.');
     }
+
+    await member.roles.remove(muteRole);
+    await interaction.reply(`${user.username} has been unmuted.`);
   },
 };
