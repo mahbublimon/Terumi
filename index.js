@@ -2,7 +2,7 @@
 
 require('dotenv').config(); // Load environment variables
 const { Client, GatewayIntentBits } = require('discord.js');
-const mongoose = require('mongoose');
+const connectDB = require('./database'); // Import database connection function
 const express = require('express');
 const path = require('path');
 
@@ -19,24 +19,22 @@ const client = new Client({
 
 // Initialize Express App for Dashboard
 const app = express();
-const PORT = 3000; // This is the port Express will run on (proxied by Nginx)
+const PORT = 3000; // Dashboard runs on this port
 
-// Serve static files for the dashboard
+// Serve static files for the dashboard (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'src/dashboard/public')));
 
-// Import dashboard routes
+// Import and use dashboard API routes
 const dashboardRoutes = require('./src/dashboard/routes/dashboard');
-app.use('/api', dashboardRoutes); // Serve API routes for stats
+app.use('/api', dashboardRoutes);
 
-// Start the dashboard server
+// Start the Express dashboard server
 app.listen(PORT, () => {
   console.log(`Dashboard running on port ${PORT}`);
 });
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Failed to connect to MongoDB', err));
+// Connect to MongoDB using the `database.js` file
+connectDB();
 
 // Bot ready event
 client.once('ready', () => {
@@ -49,7 +47,7 @@ function setPresence() {
   client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
 }
 
-// Dynamic loading of commands and events
+// Load commands and events dynamically
 const fs = require('fs');
 
 // Load command files dynamically
@@ -73,22 +71,21 @@ for (const file of eventFiles) {
   }
 }
 
-// Message handling logic
-let messageCount = 0; // Track the number of messages per minute
+// Track number of messages per minute for dashboard stats
+let messageCount = 0;
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return; // Ignore bot messages
 
   messageCount++; // Increment message count
 
-  // Example: Handle message content for leveling, AFK checks, or other custom logic
+  // Example: Handle custom logic for leveling, commands, AFK status, etc.
   const prefix = '!'; // Define your bot command prefix
   if (!message.content.startsWith(prefix)) return;
 
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
 
-  // Check if the command exists and execute it
   const command = client.commands.get(commandName);
   if (!command) return;
 
@@ -96,16 +93,16 @@ client.on('messageCreate', async (message) => {
     await command.execute(message, args);
   } catch (error) {
     console.error('Error executing command:', error);
-    message.reply('There was an error trying to execute that command!');
+    message.reply('There was an error executing that command!');
   }
 });
 
-// Reset the message count every minute for tracking messages per minute
+// Reset the message count every minute
 setInterval(() => {
   messageCount = 0; // Reset message count every 60 seconds
 }, 60000);
 
-// Function to handle bot commands dynamically
+// Handle interaction commands dynamically
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
 
