@@ -1,46 +1,60 @@
 // src/commands/moderation/mute.js
+const hasAdminPermissions = require('../../utils/permissionCheck');
+const ms = require('ms'); // For time parsing
+
 module.exports = {
   data: {
     name: 'mute',
-    description: 'Mute a user for a specific duration',
+    description: 'Mute a user for a specified duration',
     options: [
       {
         name: 'user',
         type: 'USER',
-        description: 'The user to mute',
+        description: 'User to mute',
         required: true,
       },
       {
         name: 'duration',
         type: 'STRING',
-        description: 'Duration to mute the user (e.g., 10m, 1h)',
+        description: 'Duration of mute (e.g., 10m, 1h)',
         required: true,
       },
       {
         name: 'reason',
         type: 'STRING',
-        description: 'The reason for muting',
-        required: false,
+        description: 'Reason for muting the user',
+        required: true,
       },
     ],
   },
   async execute(interaction) {
-    const user = interaction.options.getMember('user');
+    if (!hasAdminPermissions(interaction.member)) {
+      return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+    }
+
+    const user = interaction.options.getUser('user');
     const duration = interaction.options.getString('duration');
-    const reason = interaction.options.getString('reason') || 'No reason provided';
+    const reason = interaction.options.getString('reason');
+    const muteRole = interaction.guild.roles.cache.find(role => role.name === 'Muted');
 
-    if (!interaction.member.permissions.has('MODERATE_MEMBERS')) {
-      return interaction.reply('You do not have permission to use this command.');
+    if (!muteRole) {
+      return interaction.reply('Mute role not found. Please create a role called "Muted".');
     }
 
-    const msDuration = require('ms')(duration);
-    if (!msDuration || msDuration < 1000) return interaction.reply('Invalid duration provided.');
-
-    try {
-      await user.timeout(msDuration, reason);
-      await interaction.reply(`${user.user.tag} has been muted for ${duration} for: ${reason}`);
-    } catch (error) {
-      await interaction.reply('Failed to mute the user.');
+    const member = interaction.guild.members.cache.get(user.id);
+    if (member.roles.cache.has(muteRole.id)) {
+      return interaction.reply('User is already muted.');
     }
+
+    await member.roles.add(muteRole);
+    await interaction.reply(`${user.username} has been muted for ${duration}. Reason: ${reason}`);
+
+    // Unmute after the specified duration
+    setTimeout(async () => {
+      if (member.roles.cache.has(muteRole.id)) {
+        await member.roles.remove(muteRole);
+        await member.send('You have been unmuted.');
+      }
+    }, ms(duration));
   },
 };
