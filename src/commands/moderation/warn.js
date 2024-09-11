@@ -1,5 +1,5 @@
 // src/commands/moderation/warn.js
-const hasAdminPermissions = require('../../utils/permissionCheck');
+const hasModerationPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
   data: {
@@ -21,7 +21,7 @@ module.exports = {
     ],
   },
   async execute(interaction) {
-    if (!hasAdminPermissions(interaction.member)) {
+    if (!(await hasModerationPermissions(interaction.member))) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
     }
 
