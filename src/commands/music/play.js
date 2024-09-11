@@ -1,19 +1,53 @@
-const { playSong } = require('../../utils/musicPlayer');
+// src/commands/music/play.js
+const { QueryType } = require('discord-player');
+const player = require('../../utils/musicPlayer');
 
 module.exports = {
+  data: {
     name: 'play',
-    description: 'Play a song',
+    description: 'Play a song from YouTube',
     options: [
-        {
-            name: 'song',
-            type: 'STRING',
-            description: 'The name of the song to play',
-            required: true,
-        }
+      {
+        name: 'query',
+        type: 'STRING',
+        description: 'Song title or URL',
+        required: true,
+      },
     ],
-    async execute(interaction) {
-        const songName = interaction.options.getString('song');
-        await playSong(interaction.guild, songName);
-        await interaction.reply(`Now playing: ${songName}`);
+  },
+  async execute(interaction) {
+    const query = interaction.options.getString('query');
+    const voiceChannel = interaction.member.voice.channel;
+
+    if (!voiceChannel) {
+      return interaction.reply({ content: 'You must be in a voice channel to play music!', ephemeral: true });
     }
+
+    const queue = player.createQueue(interaction.guild, {
+      metadata: {
+        channel: interaction.channel,
+      },
+    });
+
+    try {
+      if (!queue.connection) await queue.connect(voiceChannel);
+    } catch {
+      queue.destroy();
+      return interaction.reply({ content: 'Could not join your voice channel!', ephemeral: true });
+    }
+
+    const track = await player.search(query, {
+      requestedBy: interaction.user,
+      searchEngine: QueryType.AUTO,
+    }).then(x => x.tracks[0]);
+
+    if (!track) {
+      return interaction.reply({ content: `No results found for ${query}!`, ephemeral: true });
+    }
+
+    queue.addTrack(track);
+    if (!queue.playing) await queue.play();
+
+    return interaction.reply({ content: `🎶 Playing **${track.title}**!` });
+  },
 };
