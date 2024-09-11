@@ -1,45 +1,43 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+// index.js
+require('dotenv').config(); // Load environment variables
+const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const mongoose = require('mongoose');
-const express = require('express');  // Add Express for the web dashboard
-require('dotenv').config();
-
-mongoose.set('strictQuery', true);  // This line suppresses the deprecation warning
+const fs = require('fs');
 
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildVoiceStates,
-    ]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMembers,
+  ],
 });
 
-client.slashCommands = new Collection();
+client.commands = new Collection();
+client.buttons = new Collection();
 
-// Load commands and events
-const { loadCommands, loadEvents } = require('./src/utils/loader');
-loadCommands(client);
-loadEvents(client);
+// Load commands dynamically
+const commandFolders = fs.readdirSync('./src/commands');
+for (const folder of commandFolders) {
+  const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
+  for (const file of commandFiles) {
+    const command = require(`./src/commands/${folder}/${file}`);
+    client.commands.set(command.data.name, command);
+  }
+}
+
+// Event handlers
+fs.readdirSync('./src/events/client').forEach(file => {
+  const event = require(`./src/events/client/${file}`);
+  const eventName = file.split('.')[0];
+  client.on(eventName, event.bind(null, client));
+});
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log('Connected to MongoDB')).catch(console.error);
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error(err));
 
-// Login bot
+// Log in to Discord
 client.login(process.env.TOKEN);
-
-// Set up Express server for dashboard (if applicable)
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-app.get('/', (req, res) => {
-    res.send('Bot Dashboard is running');
-});
-
-// Start the dashboard server
-app.listen(PORT, () => {
-    console.log(`Dashboard running on port ${PORT}`);
-});
