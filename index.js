@@ -79,7 +79,7 @@ client.on('messageCreate', async (message) => {
 
   messageCount++; // Increment message count
 
-  // Example: Handle custom logic for leveling, commands, AFK status, etc.
+  // Handle custom logic for leveling, commands, AFK status, etc.
   const prefix = '!'; // Define your bot command prefix
   if (!message.content.startsWith(prefix)) return;
 
