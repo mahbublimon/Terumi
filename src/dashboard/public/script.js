@@ -17,9 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesPerMinuteElement.textContent = data.messagesPerMinute;
         uptimeElement.textContent = formatUptime(data.uptime);
       })
-      .catch(err => {
-        console.error('Error fetching stats:', err);
-      });
+      .catch(err => console.error('Error fetching stats:', err));
   }
 
   // Format uptime in a readable format (e.g., HH:MM:SS)
