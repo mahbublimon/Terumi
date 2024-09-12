@@ -1,10 +1,9 @@
-// index.js
-
 require('dotenv').config(); // Load environment variables
 const { Client, GatewayIntentBits } = require('discord.js');
-const connectDB = require('./database'); // Import database connection function
+const connectDB = require('./database'); // Import the database connection function
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 // Initialize Discord Client
 const client = new Client({
@@ -19,7 +18,7 @@ const client = new Client({
 
 // Initialize Express App for Dashboard
 const app = express();
-const PORT = 3000; // Dashboard runs on this port
+const PORT = process.env.PORT || 3000; // Set dynamic port based on environment
 
 // Serve static files for the dashboard (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'src/dashboard/public')));
@@ -47,27 +46,30 @@ function setPresence() {
   client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
 }
 
-// Load commands and events dynamically
-const fs = require('fs');
-
-// Load command files dynamically
-const commandFiles = fs.readdirSync('./src/commands').filter(file => file.endsWith('.js'));
+// Load commands dynamically
 client.commands = new Map();
+const commandFolders = fs.readdirSync('./src/commands');
 
-for (const file of commandFiles) {
-  const command = require(`./src/commands/${file}`);
-  client.commands.set(command.data.name, command);
+for (const folder of commandFolders) {
+  const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
+  for (const file of commandFiles) {
+    const command = require(`./src/commands/${folder}/${file}`);
+    client.commands.set(command.data.name, command);
+  }
 }
 
-// Load event files dynamically
-const eventFiles = fs.readdirSync('./src/events').filter(file => file.endsWith('.js'));
+// Load events dynamically
+const eventFolders = fs.readdirSync('./src/events');
 
-for (const file of eventFiles) {
-  const event = require(`./src/events/${file}`);
-  if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args));
-  } else {
-    client.on(event.name, (...args) => event.execute(...args));
+for (const folder of eventFolders) {
+  const eventFiles = fs.readdirSync(`./src/events/${folder}`).filter(file => file.endsWith('.js'));
+  for (const file of eventFiles) {
+    const event = require(`./src/events/${folder}/${file}`);
+    if (event.once) {
+      client.once(event.name, (...args) => event.execute(...args, client));
+    } else {
+      client.on(event.name, (...args) => event.execute(...args, client));
+    }
   }
 }
 
