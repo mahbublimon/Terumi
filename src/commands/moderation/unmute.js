@@ -1,19 +1,15 @@
-// src/commands/moderation/unmute.js
+const { SlashCommandBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
-  data: {
-    name: 'unmute',
-    description: 'Unmute a user',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'User to unmute',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('unmute')
+    .setDescription('Unmute a user')
+    .addUserOption(option =>
+      option.setName('user')
+        .setDescription('User to unmute')
+        .setRequired(true)),
+
   async execute(interaction) {
     if (!hasAdminPermissions(interaction.member)) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
