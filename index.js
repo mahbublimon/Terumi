@@ -49,12 +49,12 @@ async function registerSlashCommands() {
     for (const file of commandFiles) {
       const command = require(`./src/commands/${folder}/${file}`);
 
-      // Validate the structure of each command using SlashCommandBuilder
-      if (command.data && command.data.name && command.execute) {
+      // Ensure the command uses SlashCommandBuilder
+      if (command.data && typeof command.data.toJSON === 'function' && command.execute) {
         client.commands.set(command.data.name, command);
         commands.push(command.data.toJSON()); // Prepare for registration
       } else {
-        console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property.`);
+        console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property, or is not using SlashCommandBuilder.`);
       }
     }
   }
