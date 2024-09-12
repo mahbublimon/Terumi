@@ -1,32 +1,24 @@
-// src/commands/moderation/mute.js
+const { SlashCommandBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 const ms = require('ms'); // For time parsing
 
 module.exports = {
-  data: {
-    name: 'mute',
-    description: 'Mute a user for a specified duration',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'User to mute',
-        required: true,
-      },
-      {
-        name: 'duration',
-        type: 'STRING',
-        description: 'Duration of mute (e.g., 10m, 1h)',
-        required: true,
-      },
-      {
-        name: 'reason',
-        type: 'STRING',
-        description: 'Reason for muting the user',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('mute')
+    .setDescription('Mute a user for a specified duration')
+    .addUserOption(option =>
+      option.setName('user')
+        .setDescription('User to mute')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('duration')
+        .setDescription('Duration of mute (e.g., 10m, 1h)')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('reason')
+        .setDescription('Reason for muting the user')
+        .setRequired(true)),
+
   async execute(interaction) {
     if (!hasAdminPermissions(interaction.member)) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
