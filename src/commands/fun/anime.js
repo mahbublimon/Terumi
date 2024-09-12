@@ -1,19 +1,14 @@
-// src/commands/fun/anime.js
 const axios = require('axios');
 
 module.exports = {
-  data: {
-    name: 'anime',
-    description: 'Get information about an anime',
-    options: [
-      {
-        name: 'title',
-        type: 'STRING',
-        description: 'The title of the anime',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('anime')
+    .setDescription('Get information about an anime')
+    .addStringOption(option =>
+      option.setName('title')
+        .setDescription('The title of the anime')
+        .setRequired(true)),
+
   async execute(interaction) {
     const title = interaction.options.getString('title');
     const apiKey = process.env.MYANIMELIST_API_KEY; // Store in .env file
