@@ -1,9 +1,9 @@
-// src/utils/leveling.js
+const User = require('../models/User');
 const LevelRoles = require('../models/LevelRoles');
 
 // Add experience to a user and handle level-up rewards
-async function addExperience(userID, guildID, amount) {
-  const user = await User.findOne({ userID, guildID });
+async function addExperience(userID, guildID, amount, client) {
+  let user = await User.findOne({ userID, guildID });
   if (!user) {
     user = new User({ userID, guildID });
   }
@@ -20,26 +20,35 @@ async function addExperience(userID, guildID, amount) {
 
   await user.save();
 
+  // If the user levels up, assign roles based on the new level
   if (levelUp) {
-    await assignLevelRoles(user, guildID);
+    await assignLevelRoles(user, guildID, client);
   }
 
   return { levelUp, user };
 }
 
-// Assign roles based on the user's level
-async function assignLevelRoles(user, guildID) {
-  const guild = client.guilds.cache.get(guildID);
-  const member = guild.members.cache.get(user.userID);
-  const levelRoles = await LevelRoles.findOne({ guildID });
+// Calculate XP required to level up
+function getRequiredXP(level) {
+  return 5 * (level ** 2) + 50 * level + 100; // Example XP calculation
+}
 
+// Assign roles based on the user's level
+async function assignLevelRoles(user, guildID, client) {
+  const guild = client.guilds.cache.get(guildID);
+  if (!guild) return;
+
+  const member = guild.members.cache.get(user.userID);
+  if (!member) return;
+
+  const levelRoles = await LevelRoles.findOne({ guildID });
   if (!levelRoles) return;
 
-  // Find the roles the user qualifies for based on their level
+  // Find roles the user qualifies for based on their level
   const rolesToAssign = levelRoles.levelRoles
     .filter(r => user.level >= r.level)
     .map(r => guild.roles.cache.get(r.roleID))
-    .filter(role => role); // Filter out any roles that no longer exist
+    .filter(role => role); // Filter out non-existing roles
 
   if (levelRoles.stackRoles) {
     // Stack roles: assign all roles the user qualifies for
