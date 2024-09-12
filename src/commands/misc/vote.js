@@ -1,13 +1,12 @@
-// src/commands/misc/vote.js
-const { MessageEmbed } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'vote',
-    description: 'Get a link to vote for Terumi',
-  },
+  data: new SlashCommandBuilder()
+    .setName('vote')
+    .setDescription('Get a link to vote for Terumi'),
+
   async execute(interaction) {
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('PURPLE')
       .setTitle('Vote for Terumi')
       .setDescription('Support Terumi by voting for us! [Click here to vote](https://top.gg/bot/your-bot-id)')
