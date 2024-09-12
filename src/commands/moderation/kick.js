@@ -1,25 +1,19 @@
-// src/commands/moderation/kick.js
+const { SlashCommandBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
-  data: {
-    name: 'kick',
-    description: 'Kick a user from the server',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'User to kick',
-        required: true,
-      },
-      {
-        name: 'reason',
-        type: 'STRING',
-        description: 'Reason for kicking the user',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('kick')
+    .setDescription('Kick a user from the server')
+    .addUserOption(option =>
+      option.setName('user')
+        .setDescription('User to kick')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('reason')
+        .setDescription('Reason for kicking the user')
+        .setRequired(true)),
+
   async execute(interaction) {
     if (!hasAdminPermissions(interaction.member)) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
