@@ -1,11 +1,11 @@
-// src/commands/fun/meme.js
 const axios = require('axios');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'meme',
-    description: 'Fetch a random meme',
-  },
+  data: new SlashCommandBuilder()
+    .setName('meme')
+    .setDescription('Fetch a random meme'),
+
   async execute(interaction) {
     try {
       const response = await axios.get('https://meme-api.com/gimme');
