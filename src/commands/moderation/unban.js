@@ -1,25 +1,19 @@
-// src/commands/moderation/unban.js
+const { SlashCommandBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
-  data: {
-    name: 'unban',
-    description: 'Unban a user by their ID',
-    options: [
-      {
-        name: 'user_id',
-        type: 'STRING',
-        description: 'ID of the user to unban',
-        required: true,
-      },
-      {
-        name: 'reason',
-        type: 'STRING',
-        description: 'Reason for unbanning the user',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('unban')
+    .setDescription('Unban a user by their ID')
+    .addStringOption(option =>
+      option.setName('user_id')
+        .setDescription('ID of the user to unban')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('reason')
+        .setDescription('Reason for unbanning the user')
+        .setRequired(true)),
+
   async execute(interaction) {
     if (!hasAdminPermissions(interaction.member)) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
