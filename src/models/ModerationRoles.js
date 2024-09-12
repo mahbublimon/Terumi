@@ -1,9 +1,14 @@
-// src/models/ModerationRoles.js
-const { Schema, model } = require('mongoose');
+const mongoose = require('mongoose');
 
-const moderationRolesSchema = new Schema({
-  guildID: { type: String, required: true },
-  roles: { type: [String], default: [] }, // Array of role IDs that are allowed to moderate
+const ModerationRolesSchema = new mongoose.Schema({
+  guildID: {
+    type: String,
+    required: true,
+  },
+  roles: {
+    type: [String], // Array of role IDs that are allowed to moderate
+    required: true,
+  },
 });
 
-module.exports = model('ModerationRoles', moderationRolesSchema);
+module.exports = mongoose.model('ModerationRoles', ModerationRolesSchema);
