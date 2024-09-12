@@ -4,28 +4,24 @@ const Ticket = require('../models/Ticket');
 const TicketSettings = require('../models/TicketSettings');
 
 module.exports = {
-  /**
-   * Create a new ticket for a user.
-   * @param {GuildMember} member - The member who created the ticket.
-   * @param {Guild} guild - The guild where the ticket is being created.
-   * @param {TextChannel} interactionChannel - The channel where the interaction was created.
-   * @returns {Promise<TextChannel>} The newly created ticket channel.
-   */
-  async createTicket(member, guild, interactionChannel) {
+  // Create a ticket for the user
+  async createTicket(interaction, user) {
+    const guild = interaction.guild;
     const settings = await TicketSettings.findOne({ guildID: guild.id });
 
+    // Check if ticket system is set up
     if (!settings || !settings.ticketChannel) {
-      throw new Error('Ticket channel is not set up.');
+      return interaction.reply({ content: 'Ticket system is not configured.', ephemeral: true });
     }
 
-    // Check if the user already has an open ticket
-    const existingTicket = await Ticket.findOne({ userID: member.id, guildID: guild.id, status: 'open' });
+    // Check if user already has an open ticket
+    const existingTicket = await Ticket.findOne({ userID: user.id, guildID: guild.id, status: 'open' });
     if (existingTicket) {
-      throw new Error('You already have an open ticket.');
+      return interaction.reply({ content: 'You already have an open ticket!', ephemeral: true });
     }
 
-    // Create a new ticket channel
-    const ticketChannel = await guild.channels.create(`ticket-${member.user.username}`, {
+    // Create a new ticket channel under the ticket category
+    const ticketChannel = await guild.channels.create(`ticket-${user.username}`, {
       type: 'GUILD_TEXT',
       parent: settings.ticketChannel,
       permissionOverwrites: [
@@ -34,7 +30,7 @@ module.exports = {
           deny: [Permissions.FLAGS.VIEW_CHANNEL],
         },
         {
-          id: member.id,
+          id: user.id,
           allow: [Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.SEND_MESSAGES],
         },
         ...settings.managerRoles.map((roleID) => ({
@@ -44,80 +40,89 @@ module.exports = {
       ],
     });
 
-    // Save ticket to the database
+    // Save ticket data in the database
     await Ticket.create({
       ticketID: ticketChannel.id,
-      userID: member.id,
+      userID: user.id,
       channelID: ticketChannel.id,
       guildID: guild.id,
     });
 
     // Send the initial message in the ticket channel
-    const embed = new MessageEmbed()
+    const initialEmbed = new MessageEmbed()
       .setColor('GREEN')
-      .setDescription(settings.initialMessage || 'Thank you for opening a ticket! Please explain your issue.');
+      .setDescription(settings.initialMessage || 'Please describe your issue, and a support team member will assist you shortly.');
 
-    ticketChannel.send({ embeds: [embed] });
+    await ticketChannel.send({ content: `${user}`, embeds: [initialEmbed] });
 
-    return ticketChannel;
+    interaction.reply({ content: 'Your ticket has been created!', ephemeral: true });
   },
 
-  /**
-   * Close a ticket and send the transcript to the designated transcript channel.
-   * @param {TextChannel} ticketChannel - The ticket channel that needs to be closed.
-   * @param {GuildMember} member - The member closing the ticket.
-   * @param {Guild} guild - The guild where the ticket is being closed.
-   * @returns {Promise<void>}
-   */
-  async closeTicket(ticketChannel, member, guild) {
-    const ticket = await Ticket.findOne({ channelID: ticketChannel.id, status: 'open' });
+  // Close a ticket and send the transcript to the specified channel
+  async closeTicket(interaction, ticketID) {
+    const guild = interaction.guild;
+    const ticket = await Ticket.findOne({ ticketID, status: 'open' });
 
     if (!ticket) {
-      throw new Error('Ticket not found or already closed.');
+      return interaction.reply({ content: 'Ticket not found or already closed.', ephemeral: true });
     }
 
     const settings = await TicketSettings.findOne({ guildID: guild.id });
     if (!settings || !settings.transcriptChannel) {
-      throw new Error('Transcript channel is not set up.');
+      return interaction.reply({ content: 'Transcript channel is not configured.', ephemeral: true });
     }
 
     const transcriptChannel = guild.channels.cache.get(settings.transcriptChannel);
     if (!transcriptChannel) {
-      throw new Error('Transcript channel is invalid.');
+      return interaction.reply({ content: 'Transcript channel not found.', ephemeral: true });
     }
 
-    // Fetch the messages in the ticket channel to create a transcript
+    const ticketChannel = guild.channels.cache.get(ticket.channelID);
+    if (!ticketChannel) {
+      return interaction.reply({ content: 'Ticket channel not found.', ephemeral: true });
+    }
+
+    // Fetch all messages from the ticket channel for the transcript
     const messages = await ticketChannel.messages.fetch();
     const transcript = messages.map((msg) => `${msg.author.tag}: ${msg.content}`).reverse().join('\n');
 
+    // Send the transcript to the transcript channel
     const transcriptEmbed = new MessageEmbed()
       .setColor('ORANGE')
       .setTitle(`Ticket Closed: ${ticketChannel.name}`)
-      .setDescription(`Ticket closed by ${member.user.tag}\n\n**Transcript:**\n${transcript}`);
+      .setDescription(`**Transcript:**\n${transcript}`);
 
     await transcriptChannel.send({ embeds: [transcriptEmbed] });
 
-    // Mark the ticket as closed in the database
+    // Update the ticket status and delete the ticket channel
     ticket.status = 'closed';
     ticket.closedAt = new Date();
     await ticket.save();
 
-    // Delete the ticket channel
     await ticketChannel.delete();
+
+    return interaction.reply({ content: 'Ticket closed and transcript sent.', ephemeral: true });
   },
 
-  /**
-   * Checks if a user is a ticket manager.
-   * @param {GuildMember} member - The member whose role is being checked.
-   * @param {Guild} guild - The guild where the ticket management is being performed.
-   * @returns {Promise<boolean>} True if the member has a ticket manager role, false otherwise.
-   */
-  async isTicketManager(member, guild) {
-    const settings = await TicketSettings.findOne({ guildID: guild.id });
-    if (!settings || !settings.managerRoles || settings.managerRoles.length === 0) {
-      return false;
+  // Add permissions for a user to join an existing ticket
+  async allowUserInTicket(ticketID, user, interaction) {
+    const ticket = await Ticket.findOne({ ticketID, status: 'open' });
+
+    if (!ticket) {
+      return interaction.reply({ content: 'Ticket not found or already closed.', ephemeral: true });
     }
 
-    return member.roles.cache.some((role) => settings.managerRoles.includes(role.id));
+    const ticketChannel = interaction.guild.channels.cache.get(ticket.channelID);
+    if (!ticketChannel) {
+      return interaction.reply({ content: 'Ticket channel not found.', ephemeral: true });
+    }
+
+    // Add permissions for the user to access the ticket
+    await ticketChannel.permissionOverwrites.edit(user.id, {
+      VIEW_CHANNEL: true,
+      SEND_MESSAGES: true,
+    });
+
+    return interaction.reply({ content: `${user.username} has been given access to this ticket.`, ephemeral: true });
   },
 };
