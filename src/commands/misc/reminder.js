@@ -1,28 +1,21 @@
-// src/commands/misc/reminder.js
-const { MessageEmbed } = require('discord.js');
-const ms = require('ms'); // For parsing time (like '24h' or '1d')
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const ms = require('ms');
 
-const reminders = new Map(); // Store reminders in memory (consider using a database in production)
+const reminders = new Map();
 
 module.exports = {
-  data: {
-    name: 'reminder',
-    description: 'Set a reminder',
-    options: [
-      {
-        name: 'time',
-        type: 'STRING',
-        description: 'Time after which the reminder will trigger (e.g., 1h, 30m)',
-        required: true,
-      },
-      {
-        name: 'message',
-        type: 'STRING',
-        description: 'What you want to be reminded about',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('reminder')
+    .setDescription('Set a reminder')
+    .addStringOption(option =>
+      option.setName('time')
+        .setDescription('Time after which the reminder will trigger (e.g., 1h, 30m)')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('message')
+        .setDescription('What you want to be reminded about')
+        .setRequired(true)),
+
   async execute(interaction) {
     const time = interaction.options.getString('time');
     const reminderMessage = interaction.options.getString('message');
@@ -33,10 +26,9 @@ module.exports = {
       return interaction.reply({ content: 'Invalid time format! Use something like "1h" or "30m".', ephemeral: true });
     }
 
-    // Save the reminder in memory
     reminders.set(user.id, { reminderMessage, timeMs, createdAt: Date.now() });
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('GREEN')
       .setTitle('Reminder Set')
       .setDescription(`I'll remind you in **${time}** about: **${reminderMessage}**`)
@@ -45,10 +37,9 @@ module.exports = {
 
     interaction.reply({ embeds: [embed], ephemeral: true });
 
-    // Set the reminder to DM the user after the specified time
     setTimeout(() => {
       user.send(`⏰ Reminder: ${reminderMessage}`);
-      reminders.delete(user.id); // Remove the reminder after sending
+      reminders.delete(user.id);
     }, timeMs);
   },
 };
