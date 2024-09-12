@@ -1,13 +1,12 @@
-// src/commands/misc/commands.js
-const { MessageEmbed } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'commands',
-    description: 'Get a list of all commands',
-  },
+  data: new SlashCommandBuilder()
+    .setName('commands')
+    .setDescription('Get a list of all commands'),
+
   async execute(interaction) {
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('BLUE')
       .setTitle('Command List')
       .setDescription(`
