@@ -19,7 +19,7 @@ module.exports = {
 
     await interaction.reply(`${interaction.user.username} is now AFK: ${reason}`);
   },
-  
+
   // Export the AFK users map to be used in messageCreate event
   afkUsers
 };
