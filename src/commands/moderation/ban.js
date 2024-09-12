@@ -1,25 +1,19 @@
-// src/commands/moderation/ban.js
+const { SlashCommandBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
-  data: {
-    name: 'ban',
-    description: 'Ban a user from the server',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'User to ban',
-        required: true,
-      },
-      {
-        name: 'reason',
-        type: 'STRING',
-        description: 'Reason for banning the user',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('ban')
+    .setDescription('Ban a user from the server')
+    .addUserOption(option =>
+      option.setName('user')
+        .setDescription('User to ban')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('reason')
+        .setDescription('Reason for banning the user')
+        .setRequired(true)),
+
   async execute(interaction) {
     if (!hasAdminPermissions(interaction.member)) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
