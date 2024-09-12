@@ -1,6 +1,6 @@
 // src/commands/server/giveaway.js
-const ms = require('ms');
 const { MessageEmbed } = require('discord.js');
+const ms = require('ms');
 
 module.exports = {
   data: {
@@ -40,8 +40,9 @@ module.exports = {
     const prize = interaction.options.getString('prize');
 
     const embed = new MessageEmbed()
+      .setColor('GOLD')
       .setTitle('🎉 Giveaway!')
-      .setDescription(`Prize: **${prize}**\nWinners: **${winners}**\nDuration: **${duration}**`)
+      .setDescription(`**Prize**: ${prize}\n**Winners**: ${winners}\n**Duration**: ${duration}`)
       .setFooter('React with 🎉 to enter!')
       .setTimestamp();
 
@@ -53,7 +54,12 @@ module.exports = {
       const users = await reaction.users.fetch();
       const winnersList = users.filter(user => !user.bot).random(winners);
 
-      channel.send(`🎉 Congratulations to ${winnersList.map(user => user.toString()).join(', ')}! You won **${prize}**!`);
+      const resultEmbed = new MessageEmbed()
+        .setColor('GREEN')
+        .setTitle('🎉 Giveaway Winners')
+        .setDescription(`Congratulations to ${winnersList.map(user => user.toString()).join(', ')}! You won **${prize}**!`);
+
+      channel.send({ embeds: [resultEmbed] });
     }, ms(duration));
 
     return interaction.reply({ content: `Giveaway for **${prize}** created in ${channel}!`, ephemeral: true });
