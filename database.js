@@ -1,7 +1,6 @@
-// database.js
-
 const mongoose = require('mongoose');
 
+// MongoDB connection function
 const connectDB = async () => {
   try {
     // Connect to MongoDB using the URI from environment variables
