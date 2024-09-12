@@ -1,19 +1,15 @@
-// src/commands/fun/youtube.js
 const axios = require('axios');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'youtube',
-    description: 'Search for a YouTube channel',
-    options: [
-      {
-        name: 'channel',
-        type: 'STRING',
-        description: 'Channel name to search for',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('youtube')
+    .setDescription('Search for a YouTube channel')
+    .addStringOption(option =>
+      option.setName('channel')
+        .setDescription('Channel name to search for')
+        .setRequired(true)),
+
   async execute(interaction) {
     const channel = interaction.options.getString('channel');
     const apiKey = process.env.YOUTUBE_API_KEY; // Store in .env file
