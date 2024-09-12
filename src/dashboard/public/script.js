@@ -5,7 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const channelsElement = document.getElementById('channels');
   const messagesPerMinuteElement = document.getElementById('messagesPerMinute');
   const uptimeElement = document.getElementById('uptime');
+  const profileElement = document.getElementById('profile');
 
+  // Fetch bot statistics from the server
   function fetchStats() {
     fetch('/api/stats')
       .then(response => response.json())
@@ -28,7 +30,26 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${hours}h ${minutes}m ${secs}s`;
   }
 
-  // Update stats every 15 seconds
+  // Fetch the authentication status and update the profile button
+  function fetchAuthStatus() {
+    fetch('/auth/status')
+      .then(response => response.json())
+      .then(data => {
+        if (data.loggedIn) {
+          profileElement.textContent = `Logged in as ${data.user.username}`;
+          profileElement.href = '/auth/logout'; // Change link to logout if logged in
+        } else {
+          profileElement.textContent = 'Login with Discord';
+          profileElement.href = '/auth/discord'; // Set login link if not logged in
+        }
+      })
+      .catch(err => console.error('Error fetching auth status:', err));
+  }
+
+  // Initial fetch for stats and authentication status
   fetchStats();
+  fetchAuthStatus();
+
+  // Update stats every 15 seconds
   setInterval(fetchStats, 15000);
 });
