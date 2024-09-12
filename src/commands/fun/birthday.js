@@ -1,19 +1,15 @@
-// src/commands/fun/birthday.js
+const { SlashCommandBuilder } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
-  data: {
-    name: 'birthday',
-    description: 'Set your birthday (day:month:year)',
-    options: [
-      {
-        name: 'date',
-        type: 'STRING',
-        description: 'Your birthday (DD/MM/YYYY)',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('birthday')
+    .setDescription('Set your birthday (day:month:year)')
+    .addStringOption(option =>
+      option.setName('date')
+        .setDescription('Your birthday (DD/MM/YYYY)')
+        .setRequired(true)),
+
   async execute(interaction) {
     const date = interaction.options.getString('date');
     const [day, month, year] = date.split('/').map(Number);
