@@ -1,4 +1,5 @@
 // src/commands/server/addMoney.js
+const { MessageEmbed } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
@@ -32,6 +33,13 @@ module.exports = {
     userData.money += amount;
     await userData.save();
 
-    return interaction.reply(`${user.username} has been given ${amount} chat credits! They now have ${userData.money}.`);
+    const embed = new MessageEmbed()
+      .setColor('BLUE')
+      .setTitle('Credits Added')
+      .setDescription(`${user.username} has been given **${amount} credits**!`)
+      .addField('Total Credits', `${userData.money}`, true)
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed] });
   },
 };
