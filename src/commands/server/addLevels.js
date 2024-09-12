@@ -1,4 +1,5 @@
 // src/commands/server/addLevels.js
+const { MessageEmbed } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
@@ -32,6 +33,13 @@ module.exports = {
     userData.level += amount;
     await userData.save();
 
-    return interaction.reply(`${user.username} has been given ${amount} levels! They are now level ${userData.level}.`);
+    const embed = new MessageEmbed()
+      .setColor('GREEN')
+      .setTitle('Levels Added')
+      .setDescription(`${user.username} has been given **${amount} levels**!`)
+      .addField('New Level', `${userData.level}`, true)
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed] });
   },
 };
