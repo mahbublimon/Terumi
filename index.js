@@ -55,8 +55,8 @@ function setPresence() {
 // Register Slash Commands globally or for specific guilds
 async function registerSlashCommands() {
   const commandFolders = fs.readdirSync('./src/commands');
-
   const commands = [];
+
   for (const folder of commandFolders) {
     const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
 
@@ -131,4 +131,6 @@ setInterval(() => {
 module.exports = { client, messageCount };
 
 // Log in to Discord using the bot token from .env
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN).catch((error) => {
+  console.error('Failed to login:', error.message);
+});
