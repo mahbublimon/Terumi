@@ -1,39 +1,29 @@
-// src/commands/admin/settempchannels.js
+const { SlashCommandBuilder } = require('discord.js');
 const TemporaryChannelSettings = require('../../models/TemporaryChannelSettings');
 
 module.exports = {
-  data: {
-    name: 'settempchannels',
-    description: 'Set up temporary voice channel settings',
-    options: [
-      {
-        name: 'category',
-        type: 'CHANNEL',
-        description: 'Category where temporary channels will be created',
-        channelTypes: ['GUILD_CATEGORY'],
-        required: true,
-      },
-      {
-        name: 'create_channel',
-        type: 'CHANNEL',
-        description: 'The channel members join to create a temporary channel',
-        channelTypes: ['GUILD_VOICE'],
-        required: true,
-      },
-      {
-        name: 'channel_name_template',
-        type: 'STRING',
-        description: 'Template for the name of the created channels (use {user.name})',
-        required: false,
-      },
-      {
-        name: 'user_limit',
-        type: 'INTEGER',
-        description: 'User limit for temporary channels (0 for no limit)',
-        required: false,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('settempchannels')
+    .setDescription('Set up temporary voice channel settings')
+    .addChannelOption(option =>
+      option.setName('category')
+        .setDescription('Category where temporary channels will be created')
+        .addChannelTypes(['GUILD_CATEGORY'])
+        .setRequired(true))
+    .addChannelOption(option =>
+      option.setName('create_channel')
+        .setDescription('The channel members join to create a temporary channel')
+        .addChannelTypes(['GUILD_VOICE'])
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('channel_name_template')
+        .setDescription('Template for the name of the created channels (use {user.name})')
+        .setRequired(false))
+    .addIntegerOption(option =>
+      option.setName('user_limit')
+        .setDescription('User limit for temporary channels (0 for no limit)')
+        .setRequired(false)),
+
   async execute(interaction) {
     if (!interaction.member.permissions.has('ADMINISTRATOR')) {
       return interaction.reply({ content: 'You must be an administrator to use this command.', ephemeral: true });
