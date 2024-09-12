@@ -1,5 +1,7 @@
 require('dotenv').config(); // Load environment variables
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
 const connectDB = require('./database'); // Import the database connection function
 const express = require('express');
 const path = require('path');
@@ -15,6 +17,9 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
   ],
 });
+
+// Collection for commands
+client.commands = new Collection();
 
 // Initialize Express App for Dashboard
 const app = express();
@@ -36,8 +41,9 @@ app.listen(PORT, () => {
 connectDB();
 
 // Bot ready event
-client.once('ready', () => {
+client.once('ready', async () => {
   console.log(`${client.user.tag} is online and ready!`);
+  await registerSlashCommands();
   setPresence();
 });
 
@@ -46,69 +52,51 @@ function setPresence() {
   client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
 }
 
-// Load commands dynamically
-client.commands = new Map();
-const commandFolders = fs.readdirSync('./src/commands');
+// Register Slash Commands globally or for specific guilds
+async function registerSlashCommands() {
+  const commandFolders = fs.readdirSync('./src/commands');
 
-for (const folder of commandFolders) {
-  const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
-  for (const file of commandFiles) {
-    const command = require(`./src/commands/${folder}/${file}`);
-    
-    // Check if the command has required properties: 'data' and 'execute'
-    if (command.data && command.data.name && command.execute) {
-      client.commands.set(command.data.name, command);
-    } else {
-      console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property.`);
+  const commands = [];
+  for (const folder of commandFolders) {
+    const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
+
+    for (const file of commandFiles) {
+      const command = require(`./src/commands/${folder}/${file}`);
+
+      // Validate the structure of each command using SlashCommandBuilder
+      if (command.data && command.data.name && command.execute) {
+        client.commands.set(command.data.name, command);
+        commands.push(command.data.toJSON()); // Prepare for registration
+      } else {
+        console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property.`);
+      }
     }
   }
-}
 
-// Load events dynamically
-const eventFolders = fs.readdirSync('./src/events');
-
-for (const folder of eventFolders) {
-  const eventFiles = fs.readdirSync(`./src/events/${folder}`).filter(file => file.endsWith('.js'));
-  for (const file of eventFiles) {
-    const event = require(`./src/events/${folder}/${file}`);
-    if (event.once) {
-      client.once(event.name, (...args) => event.execute(...args, client));
-    } else {
-      client.on(event.name, (...args) => event.execute(...args, client));
-    }
-  }
-}
-
-// Track number of messages per minute for dashboard stats
-let messageCount = 0;
-
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return; // Ignore bot messages
-
-  messageCount++; // Increment message count
-
-  // Handle custom logic for leveling, commands, AFK status, etc.
-  const prefix = '!'; // Define your bot command prefix
-  if (!message.content.startsWith(prefix)) return;
-
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const commandName = args.shift().toLowerCase();
-
-  const command = client.commands.get(commandName);
-  if (!command) return;
-
+  // Use REST API to register the commands
+  const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
   try {
-    await command.execute(message, args);
-  } catch (error) {
-    console.error('Error executing command:', error);
-    message.reply('There was an error executing that command!');
-  }
-});
+    console.log('Started refreshing application (/) commands.');
 
-// Reset the message count every minute
-setInterval(() => {
-  messageCount = 0; // Reset message count every 60 seconds
-}, 60000);
+    if (process.env.GUILD_ID) {
+      // If a GUILD_ID is provided, register commands for a specific guild
+      await rest.put(
+        Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID),
+        { body: commands },
+      );
+    } else {
+      // Register commands globally
+      await rest.put(
+        Routes.applicationCommands(client.user.id),
+        { body: commands },
+      );
+    }
+
+    console.log('Successfully reloaded application (/) commands.');
+  } catch (error) {
+    console.error('Error registering slash commands:', error);
+  }
+}
 
 // Handle interaction commands dynamically
 client.on('interactionCreate', async (interaction) => {
@@ -124,6 +112,20 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
   }
 });
+
+// Track number of messages per minute for dashboard stats
+let messageCount = 0;
+
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return; // Ignore bot messages
+
+  messageCount++; // Increment message count
+});
+
+// Reset the message count every minute
+setInterval(() => {
+  messageCount = 0; // Reset message count every 60 seconds
+}, 60000);
 
 // Export the client and messageCount for use in the dashboard routes
 module.exports = { client, messageCount };
