@@ -1,19 +1,15 @@
-// src/commands/fun/hug.js
 const axios = require('axios');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'hug',
-    description: 'Hug someone',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'User to hug',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('hug')
+    .setDescription('Hug someone')
+    .addUserOption(option =>
+      option.setName('user')
+        .setDescription('User to hug')
+        .setRequired(true)),
+
   async execute(interaction) {
     const target = interaction.options.getUser('user');
     const gifResponse = await axios.get(`https://api.giphy.com/v1/gifs/random`, {
