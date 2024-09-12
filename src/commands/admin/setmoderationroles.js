@@ -1,19 +1,15 @@
-// src/commands/admin/setmoderationroles.js
+const { SlashCommandBuilder } = require('discord.js');
 const ModerationRoles = require('../../models/ModerationRoles');
 
 module.exports = {
-  data: {
-    name: 'setmoderationroles',
-    description: 'Set roles allowed to use moderation commands',
-    options: [
-      {
-        name: 'roles',
-        type: 'ROLE',
-        description: 'Roles allowed to moderate (multiple allowed)',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('setmoderationroles')
+    .setDescription('Set roles allowed to use moderation commands')
+    .addRoleOption(option =>
+      option.setName('roles')
+        .setDescription('Roles allowed to moderate')
+        .setRequired(true)),
+
   async execute(interaction) {
     if (!interaction.member.permissions.has('ADMINISTRATOR')) {
       return interaction.reply({ content: 'You must be an administrator to use this command.', ephemeral: true });
