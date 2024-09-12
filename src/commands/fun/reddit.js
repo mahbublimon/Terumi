@@ -1,11 +1,11 @@
-// src/commands/fun/reddit.js
 const axios = require('axios');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'reddit',
-    description: 'Get a random Reddit post',
-  },
+  data: new SlashCommandBuilder()
+    .setName('reddit')
+    .setDescription('Get a random Reddit post'),
+
   async execute(interaction) {
     try {
       const response = await axios.get('https://www.reddit.com/r/popular/random/.json');
