@@ -1,3 +1,4 @@
+const { SlashCommandBuilder } = require('discord.js');  // Ensure this import is present
 const axios = require('axios');
 
 module.exports = {
