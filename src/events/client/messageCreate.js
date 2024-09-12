@@ -1,4 +1,3 @@
-// src/events/client/messageCreate.js
 const { addExperience } = require('../../utils/leveling');
 const cooldowns = new Map(); // For cooldown tracking
 const afkUsers = require('../../commands/fun/afk').afkUsers; // AFK users map
@@ -42,7 +41,7 @@ async function handleExperienceGain(message, client) {
   const cooldownTime = 60000; // 60 seconds cooldown
   const userCooldown = cooldowns.get(message.author.id);
 
-  // Check if user is on cooldown
+  // Check if the user is on cooldown
   if (userCooldown && Date.now() - userCooldown < cooldownTime) return;
 
   try {
@@ -50,7 +49,7 @@ async function handleExperienceGain(message, client) {
     const randomXP = Math.floor(Math.random() * 25) + 10;
     const { levelUp, user } = await addExperience(message.author.id, message.guild.id, randomXP);
 
-    // If user leveled up, announce it
+    // If the user leveled up, announce it
     if (levelUp) {
       await message.channel.send(`${message.author}, congratulations! You've leveled up to level ${user.level}!`);
       await assignLevelRole(message, user, client);
