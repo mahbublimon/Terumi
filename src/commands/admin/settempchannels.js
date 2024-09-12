@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, ChannelType } = require('discord.js');
 const TemporaryChannelSettings = require('../../models/TemporaryChannelSettings');
 
 module.exports = {
@@ -8,12 +8,12 @@ module.exports = {
     .addChannelOption(option =>
       option.setName('category')
         .setDescription('Category where temporary channels will be created')
-        .addChannelTypes(['GUILD_CATEGORY'])
+        .addChannelTypes(ChannelType.GuildCategory) // Correct enum for Guild Category
         .setRequired(true))
     .addChannelOption(option =>
       option.setName('create_channel')
         .setDescription('The channel members join to create a temporary channel')
-        .addChannelTypes(['GUILD_VOICE'])
+        .addChannelTypes(ChannelType.GuildVoice) // Correct enum for Voice Channel
         .setRequired(true))
     .addStringOption(option =>
       option.setName('channel_name_template')
@@ -47,6 +47,6 @@ module.exports = {
 
     await settings.save();
 
-    await interaction.reply(`Temporary channel settings updated successfully!`);
+    await interaction.reply('Temporary channel settings updated successfully!');
   },
 };
