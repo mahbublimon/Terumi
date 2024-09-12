@@ -1,19 +1,15 @@
-// src/commands/moderation/lock.js
+const { SlashCommandBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
-  data: {
-    name: 'lock',
-    description: 'Lock a channel',
-    options: [
-      {
-        name: 'channel',
-        type: 'CHANNEL',
-        description: 'Channel to lock',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('lock')
+    .setDescription('Lock a channel')
+    .addChannelOption(option =>
+      option.setName('channel')
+        .setDescription('Channel to lock')
+        .setRequired(true)),
+
   async execute(interaction) {
     if (!hasAdminPermissions(interaction.member)) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
