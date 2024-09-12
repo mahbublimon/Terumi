@@ -1,20 +1,15 @@
-// src/commands/leveling/leaderboard.js
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const User = require('../../models/User');
-const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'leaderboard',
-    description: 'Shows the server level leaderboard',
-    options: [
-      {
-        name: 'balance',
-        type: 'NUMBER',
-        description: 'Number of users to display',
-        required: false,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('leaderboard')
+    .setDescription('Shows the server level leaderboard')
+    .addNumberOption(option => 
+      option.setName('balance')
+        .setDescription('Number of users to display')
+        .setRequired(false)),
+
   async execute(interaction) {
     const balance = interaction.options.getNumber('balance') || 10;
     const users = await User.find({ guildID: interaction.guild.id })
