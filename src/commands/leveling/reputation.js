@@ -1,19 +1,15 @@
-// src/commands/leveling/reputation.js
+const { SlashCommandBuilder } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
-  data: {
-    name: 'reputation',
-    description: 'Give a reputation point to someone',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'User to give reputation to',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('reputation')
+    .setDescription('Give a reputation point to someone')
+    .addUserOption(option =>
+      option.setName('user')
+        .setDescription('User to give reputation to')
+        .setRequired(true)),
+
   async execute(interaction) {
     const target = interaction.options.getUser('user');
     if (target.id === interaction.user.id) return interaction.reply('You cannot give reputation to yourself.');
