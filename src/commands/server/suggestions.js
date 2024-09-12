@@ -1,4 +1,5 @@
 // src/commands/server/suggestions.js
+const { MessageEmbed } = require('discord.js');
 const Suggestion = require('../../models/Suggestion');
 
 module.exports = {
@@ -33,6 +34,12 @@ module.exports = {
     suggestion.comment = comment;
     await suggestion.save();
 
-    return interaction.reply({ content: `Suggestion ${suggestionId} accepted! Comment: ${comment}` });
+    const embed = new MessageEmbed()
+      .setColor('GREEN')
+      .setTitle('Suggestion Accepted')
+      .setDescription(`**Suggestion ID**: ${suggestionId}\n**Comment**: ${comment}`)
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed] });
   },
 };
