@@ -54,7 +54,13 @@ for (const folder of commandFolders) {
   const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
   for (const file of commandFiles) {
     const command = require(`./src/commands/${folder}/${file}`);
-    client.commands.set(command.data.name, command);
+    
+    // Check if the command has required properties: 'data' and 'execute'
+    if (command.data && command.data.name && command.execute) {
+      client.commands.set(command.data.name, command);
+    } else {
+      console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property.`);
+    }
   }
 }
 
