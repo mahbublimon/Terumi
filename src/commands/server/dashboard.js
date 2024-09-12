@@ -1,4 +1,6 @@
 // src/commands/server/dashboard.js
+const { MessageEmbed } = require('discord.js');
+
 module.exports = {
   data: {
     name: 'dashboard',
@@ -6,6 +8,13 @@ module.exports = {
   },
   async execute(interaction) {
     const dashboardLink = `http://yourdashboardurl.com/${interaction.guild.id}`;
-    return interaction.reply({ content: `Here is your dashboard link: ${dashboardLink}`, ephemeral: true });
+
+    const embed = new MessageEmbed()
+      .setColor('BLUE')
+      .setTitle('Server Dashboard')
+      .setDescription(`Here is your dashboard link: [Dashboard](${dashboardLink})`)
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed], ephemeral: true });
   },
 };
