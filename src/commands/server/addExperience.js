@@ -1,4 +1,5 @@
 // src/commands/server/addExperience.js
+const { MessageEmbed } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
@@ -32,6 +33,12 @@ module.exports = {
     userData.experience += amount;
     await userData.save();
 
-    return interaction.reply(`${user.username} has been given ${amount} experience points!`);
+    const embed = new MessageEmbed()
+      .setColor('GREEN')
+      .setTitle('Experience Added')
+      .setDescription(`${user.username} has been given **${amount} experience points**!`)
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed] });
   },
 };
