@@ -1,19 +1,15 @@
-// src/commands/moderation/unlock.js
+const { SlashCommandBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
-  data: {
-    name: 'unlock',
-    description: 'Unlock a channel',
-    options: [
-      {
-        name: 'channel',
-        type: 'CHANNEL',
-        description: 'Channel to unlock',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('unlock')
+    .setDescription('Unlock a channel')
+    .addChannelOption(option =>
+      option.setName('channel')
+        .setDescription('Channel to unlock')
+        .setRequired(true)),
+
   async execute(interaction) {
     if (!hasAdminPermissions(interaction.member)) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
