@@ -1,9 +1,11 @@
-// src/commands/misc/reminderList.js
+const { SlashCommandBuilder } = require('discord.js');
+const ms = require('ms');
+
 module.exports = {
-  data: {
-    name: 'reminder-list',
-    description: 'List all your active reminders',
-  },
+  data: new SlashCommandBuilder()
+    .setName('reminder-list')
+    .setDescription('List all your active reminders'),
+
   async execute(interaction) {
     const userReminders = reminders.get(interaction.user.id);
 
