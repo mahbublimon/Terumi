@@ -1,20 +1,15 @@
-// src/commands/misc/suggest.js
-const { MessageEmbed } = require('discord.js');
-const Suggestion = require('../../models/Suggestion'); // Assuming you use a Suggestion model to store suggestions
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const Suggestion = require('../../models/Suggestion');
 
 module.exports = {
-  data: {
-    name: 'suggest',
-    description: 'Submit a suggestion for the server',
-    options: [
-      {
-        name: 'suggestion',
-        type: 'STRING',
-        description: 'The suggestion you want to submit',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('suggest')
+    .setDescription('Submit a suggestion for the server')
+    .addStringOption(option =>
+      option.setName('suggestion')
+        .setDescription('The suggestion you want to submit')
+        .setRequired(true)),
+
   async execute(interaction) {
     const suggestionText = interaction.options.getString('suggestion');
     const suggestion = new Suggestion({
@@ -25,7 +20,7 @@ module.exports = {
     });
     await suggestion.save();
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('BLUE')
       .setTitle('New Suggestion')
       .setDescription(suggestionText)
