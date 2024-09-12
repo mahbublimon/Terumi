@@ -1,25 +1,11 @@
 require('dotenv').config(); // Load environment variables
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { client, messageCount } = require('./bot'); // Import from bot.js
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const connectDB = require('./database'); // Import the database connection function
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-
-// Initialize Discord Client
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMembers,
-  ],
-});
-
-// Collection for commands
-client.commands = new Collection();
 
 // Initialize Express App for Dashboard
 const app = express();
@@ -114,8 +100,6 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 // Track number of messages per minute for dashboard stats
-let messageCount = 0;
-
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return; // Ignore bot messages
 
@@ -126,9 +110,6 @@ client.on('messageCreate', async (message) => {
 setInterval(() => {
   messageCount = 0; // Reset message count every 60 seconds
 }, 60000);
-
-// Export the client and messageCount for use in the dashboard routes
-module.exports = { client, messageCount };
 
 // Log in to Discord using the bot token from .env
 client.login(process.env.TOKEN).catch((error) => {
