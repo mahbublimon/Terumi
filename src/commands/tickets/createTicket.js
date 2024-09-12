@@ -1,7 +1,6 @@
 // src/commands/tickets/createTicket.js
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
-const Ticket = require('../../models/Ticket');
-const TicketSettings = require('../../models/TicketSettings');
+const ticketHandler = require('../../utils/ticketHandler');
 
 module.exports = {
   data: {
@@ -22,6 +21,6 @@ module.exports = {
       .setDescription('Click the button below to create a support ticket.');
 
     await interaction.channel.send({ embeds: [embed], components: [ticketRow] });
-    return interaction.reply({ content: 'Ticket message sent!', ephemeral: true });
+    return interaction.reply({ content: 'Ticket creation message sent!', ephemeral: true });
   },
 };
