@@ -1,4 +1,5 @@
 // src/commands/server/resetData.js
+const { MessageEmbed } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
@@ -31,6 +32,12 @@ module.exports = {
       await user.save();
     }
 
-    return interaction.reply({ content: `All users' ${dataType} have been reset!` });
+    const embed = new MessageEmbed()
+      .setColor('RED')
+      .setTitle('Data Reset')
+      .setDescription(`All users' **${dataType}** have been reset!`)
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed] });
   },
 };
