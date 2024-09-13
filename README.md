@@ -93,10 +93,6 @@ Below are some of the available commands:
 - `/profile [user]`: Display a user's leveling profile.
 - `/leaderboard`: Display the leveling leaderboard.
 
-## Contributing
-
-Feel free to fork the repository and make changes! If you'd like to contribute directly to this repository, please open a pull request.
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
