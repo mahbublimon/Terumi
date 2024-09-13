@@ -1,19 +1,16 @@
-// src/commands/music/seek.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'seek',
-    description: 'Seek to a specific timestamp in the song',
-    options: [
-      {
-        name: 'time',
-        type: 'STRING',
-        description: 'The timestamp to seek to (e.g., 2:36)',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('seek')
+    .setDescription('Seek to a specific timestamp in the song')
+    .addStringOption(option =>
+      option.setName('time')
+        .setDescription('The timestamp to seek to (e.g., 2:36)')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
     const time = interaction.options.getString('time');
