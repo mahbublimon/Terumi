@@ -1,4 +1,4 @@
-// src/commands/music/pause.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
