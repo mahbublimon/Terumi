@@ -1,12 +1,13 @@
-// src/commands/music/play.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const { QueryType } = require('discord-player');
 const player = require('../../utils/musicPlayer');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('play')
     .setDescription('Play a song from YouTube')
-    .addStringOption(option => 
+    .addStringOption(option =>
       option.setName('query')
         .setDescription('Song title or URL')
         .setRequired(true)
@@ -45,6 +46,12 @@ module.exports = {
     queue.addTrack(track);
     if (!queue.playing) await queue.play();
 
-    return interaction.reply({ content: `🎶 Playing **${track.title}**!` });
+    const playEmbed = new EmbedBuilder()
+      .setTitle('🎶 Now Playing')
+      .setDescription(`**${track.title}**`)
+      .setURL(track.url)
+      .setColor('GREEN');
+
+    return interaction.reply({ embeds: [playEmbed] });
   },
 };
