@@ -2,10 +2,10 @@
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'pause',
-    description: 'Pause the current song',
-  },
+  data: new SlashCommandBuilder()
+    .setName('pause')
+    .setDescription('Pause the current song'),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
 
