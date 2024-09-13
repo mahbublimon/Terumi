@@ -1,11 +1,11 @@
-// src/commands/music/loop.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Import SlashCommandBuilder
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('loop')
     .setDescription('Toggle loop mode for the current song or the entire queue')
-    .addStringOption(option => 
+    .addStringOption(option =>
       option.setName('mode')
         .setDescription('Loop mode: track, queue, or off')
         .setRequired(true)
@@ -13,8 +13,7 @@ module.exports = {
           { name: 'Track', value: 'track' },
           { name: 'Queue', value: 'queue' },
           { name: 'Off', value: 'off' }
-        )
-    ),
+        )),
 
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
