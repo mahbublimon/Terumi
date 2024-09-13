@@ -1,23 +1,19 @@
-// src/commands/server/say.js
-const { MessageEmbed } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'say',
-    description: 'Send a custom message as Terumi',
-    options: [
-      {
-        name: 'message',
-        type: 'STRING',
-        description: 'The message to send',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('say')
+    .setDescription('Send a custom message as Terumi')
+    .addStringOption(option => 
+      option.setName('message')
+        .setDescription('The message to send')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const message = interaction.options.getString('message');
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('PURPLE')
       .setTitle('Message from Terumi')
       .setDescription(message)
