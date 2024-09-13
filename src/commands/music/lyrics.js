@@ -3,10 +3,10 @@ const lyricsFinder = require('lyrics-finder');
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'lyrics',
-    description: 'Get the lyrics for the current song',
-  },
+  data: new SlashCommandBuilder()
+    .setName('lyrics')
+    .setDescription('Get the lyrics for the current song'),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
 
