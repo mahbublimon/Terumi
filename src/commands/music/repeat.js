@@ -1,24 +1,21 @@
-// src/commands/music/repeat.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'repeat',
-    description: 'Toggle repeat mode for the current song or the entire queue',
-    options: [
-      {
-        name: 'mode',
-        type: 'STRING',
-        description: 'Repeat mode: track, queue, or off',
-        required: true,
-        choices: [
+  data: new SlashCommandBuilder()
+    .setName('repeat')
+    .setDescription('Toggle repeat mode for the current song or the entire queue')
+    .addStringOption(option =>
+      option.setName('mode')
+        .setDescription('Repeat mode: track, queue, or off')
+        .setRequired(true)
+        .addChoices(
           { name: 'Track', value: 'track' },
           { name: 'Queue', value: 'queue' },
-          { name: 'Off', value: 'off' },
-        ],
-      },
-    ],
-  },
+          { name: 'Off', value: 'off' }
+        )
+    ),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
     const mode = interaction.options.getString('mode');
