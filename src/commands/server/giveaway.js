@@ -1,49 +1,42 @@
-// src/commands/server/giveaway.js
-const { MessageEmbed } = require('discord.js');
-const ms = require('ms');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const ms = require('ms'); // For handling giveaway duration
 
 module.exports = {
-  data: {
-    name: 'giveaway',
-    description: 'Create a new giveaway',
-    options: [
-      {
-        name: 'channel',
-        type: 'CHANNEL',
-        description: 'The channel for the giveaway',
-        required: true,
-      },
-      {
-        name: 'duration',
-        type: 'STRING',
-        description: 'The duration of the giveaway (e.g., 3d)',
-        required: true,
-      },
-      {
-        name: 'winners',
-        type: 'INTEGER',
-        description: 'The number of winners',
-        required: true,
-      },
-      {
-        name: 'prize',
-        type: 'STRING',
-        description: 'The prize for the giveaway',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('giveaway')
+    .setDescription('Create a new giveaway')
+    .addChannelOption(option => 
+      option.setName('channel')
+        .setDescription('The channel for the giveaway')
+        .setRequired(true)
+    )
+    .addStringOption(option => 
+      option.setName('duration')
+        .setDescription('The duration of the giveaway (e.g., 3d)')
+        .setRequired(true)
+    )
+    .addIntegerOption(option => 
+      option.setName('winners')
+        .setDescription('The number of winners')
+        .setRequired(true)
+    )
+    .addStringOption(option => 
+      option.setName('prize')
+        .setDescription('The prize for the giveaway')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const channel = interaction.options.getChannel('channel');
     const duration = interaction.options.getString('duration');
     const winners = interaction.options.getInteger('winners');
     const prize = interaction.options.getString('prize');
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('GOLD')
       .setTitle('🎉 Giveaway!')
       .setDescription(`**Prize**: ${prize}\n**Winners**: ${winners}\n**Duration**: ${duration}`)
-      .setFooter('React with 🎉 to enter!')
+      .setFooter({ text: 'React with 🎉 to enter!' })
       .setTimestamp();
 
     const giveawayMessage = await channel.send({ embeds: [embed] });
@@ -54,7 +47,7 @@ module.exports = {
       const users = await reaction.users.fetch();
       const winnersList = users.filter(user => !user.bot).random(winners);
 
-      const resultEmbed = new MessageEmbed()
+      const resultEmbed = new EmbedBuilder()
         .setColor('GREEN')
         .setTitle('🎉 Giveaway Winners')
         .setDescription(`Congratulations to ${winnersList.map(user => user.toString()).join(', ')}! You won **${prize}**!`);
