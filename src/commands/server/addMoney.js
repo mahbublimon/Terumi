@@ -1,26 +1,21 @@
-// src/commands/server/addMoney.js
-const { MessageEmbed } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
-  data: {
-    name: 'add money',
-    description: 'Add chat credits to a user',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'The user to add money to',
-        required: true,
-      },
-      {
-        name: 'amount',
-        type: 'INTEGER',
-        description: 'Amount of money to add',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('addmoney')
+    .setDescription('Add chat credits to a user')
+    .addUserOption(option => 
+      option.setName('user')
+        .setDescription('The user to add money to')
+        .setRequired(true)
+    )
+    .addIntegerOption(option => 
+      option.setName('amount')
+        .setDescription('Amount of money to add')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const user = interaction.options.getUser('user');
     const amount = interaction.options.getInteger('amount');
@@ -33,11 +28,11 @@ module.exports = {
     userData.money += amount;
     await userData.save();
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('BLUE')
       .setTitle('Credits Added')
       .setDescription(`${user.username} has been given **${amount} credits**!`)
-      .addField('Total Credits', `${userData.money}`, true)
+      .addFields({ name: 'Total Credits', value: `${userData.money}`, inline: true })
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed] });
