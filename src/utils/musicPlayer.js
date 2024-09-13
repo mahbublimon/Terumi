@@ -1,7 +1,7 @@
 const { Player } = require('discord-player');
-const { client } = require('../../index'); // Adjust path to where you initialize the Discord client
+const { client } = require('../../index'); // Make sure the path to the client is correct
 
-// Create a new Player instance
+// Initialize the player with correct options
 const player = new Player(client, {
   ytdlOptions: {
     quality: 'highestaudio',
@@ -9,7 +9,7 @@ const player = new Player(client, {
   }
 });
 
-// Handle music events
+// Listen for track events
 player.on('trackStart', (queue, track) => {
   queue.metadata.channel.send(`🎶 Now playing: **${track.title}**`);
 });
