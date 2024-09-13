@@ -1,5 +1,5 @@
 require('dotenv').config(); // Load environment variables
-const { client, messageCount } = require('./bot'); // Import from bot.js
+const { client, messageCount } = require('./bot'); // Import client and messageCount from bot.js
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const connectDB = require('./database'); // Import the database connection function
