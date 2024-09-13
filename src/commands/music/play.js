@@ -3,18 +3,15 @@ const { QueryType } = require('discord-player');
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'play',
-    description: 'Play a song from YouTube',
-    options: [
-      {
-        name: 'query',
-        type: 'STRING',
-        description: 'Song title or URL',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('play')
+    .setDescription('Play a song from YouTube')
+    .addStringOption(option => 
+      option.setName('query')
+        .setDescription('Song title or URL')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const query = interaction.options.getString('query');
     const voiceChannel = interaction.member.voice.channel;
