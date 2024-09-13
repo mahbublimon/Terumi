@@ -1,16 +1,15 @@
-// src/commands/music/forward.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Import SlashCommandBuilder
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('forward')
     .setDescription('Fast forward the current song by a specified amount of seconds')
-    .addIntegerOption(option => 
+    .addIntegerOption(option =>
       option.setName('seconds')
         .setDescription('The number of seconds to fast forward')
-        .setRequired(true)
-    ),
-
+        .setRequired(true)),
+  
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
     const seconds = interaction.options.getInteger('seconds');
