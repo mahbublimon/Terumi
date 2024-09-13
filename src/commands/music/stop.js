@@ -1,11 +1,11 @@
-// src/commands/music/stop.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'stop',
-    description: 'Stop the music and clear the queue',
-  },
+  data: new SlashCommandBuilder()
+    .setName('stop')
+    .setDescription('Stop the music and clear the queue'),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
 
