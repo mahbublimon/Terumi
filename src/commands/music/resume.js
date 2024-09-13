@@ -1,11 +1,11 @@
-// src/commands/music/resume.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'resume',
-    description: 'Resume the paused song',
-  },
+  data: new SlashCommandBuilder()
+    .setName('resume')
+    .setDescription('Resume the paused song'),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
 
