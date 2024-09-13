@@ -1,11 +1,11 @@
-// src/commands/music/shuffle.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'shuffle',
-    description: 'Shuffle the current music queue',
-  },
+  data: new SlashCommandBuilder()
+    .setName('shuffle')
+    .setDescription('Shuffle the current music queue'),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
 
