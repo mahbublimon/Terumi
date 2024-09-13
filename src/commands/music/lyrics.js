@@ -1,6 +1,7 @@
-// src/commands/music/lyrics.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const lyricsFinder = require('lyrics-finder');
 const player = require('../../utils/musicPlayer');
+const { EmbedBuilder } = require('discord.js'); // For embed messages
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -17,8 +18,11 @@ module.exports = {
     const currentTrack = queue.current;
     const lyrics = await lyricsFinder(currentTrack.author, currentTrack.title) || 'No lyrics found!';
 
-    return interaction.reply({
-      content: `**Lyrics for ${currentTrack.title}:**\n${lyrics}`,
-    });
+    const lyricsEmbed = new EmbedBuilder()
+      .setTitle(`Lyrics for ${currentTrack.title}`)
+      .setDescription(lyrics)
+      .setColor('BLUE');
+
+    return interaction.reply({ embeds: [lyricsEmbed] });
   },
 };
