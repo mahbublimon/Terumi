@@ -1,11 +1,11 @@
 const { Player } = require('discord-player');
-const { client } = require('../bot'); // Correct path to the client
+const { client } = require('../../bot'); // Correct relative path to bot.js
 
 // Initialize the player with proper options
 const player = new Player(client, {
   ytdlOptions: {
     quality: 'highestaudio',
-    highWaterMark: 1 << 25, // Adjusts buffer size to handle larger streams
+    highWaterMark: 1 << 25, // Adjust buffer size to handle larger streams
   },
 });
 
