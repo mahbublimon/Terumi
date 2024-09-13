@@ -1,5 +1,6 @@
-// src/commands/music/queue.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,8 +15,12 @@ module.exports = {
     }
 
     const tracks = queue.tracks.map((track, i) => `${i + 1}. **${track.title}** (${track.duration})`).join('\n');
-    return interaction.reply({
-      content: `🎶 **Current Queue**:\n${tracks}`,
-    });
+    
+    const queueEmbed = new EmbedBuilder()
+      .setTitle('🎶 Current Queue')
+      .setDescription(tracks)
+      .setColor('BLUE');
+
+    return interaction.reply({ embeds: [queueEmbed] });
   },
 };
