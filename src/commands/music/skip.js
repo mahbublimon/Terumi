@@ -1,11 +1,11 @@
-// src/commands/music/skip.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'skip',
-    description: 'Skip the current song',
-  },
+  data: new SlashCommandBuilder()
+    .setName('skip')
+    .setDescription('Skip the current song'),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
 
