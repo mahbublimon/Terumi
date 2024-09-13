@@ -1,26 +1,21 @@
-// src/commands/server/addLevels.js
-const { MessageEmbed } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
-  data: {
-    name: 'add levels',
-    description: 'Add levels to a user',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'The user to add levels to',
-        required: true,
-      },
-      {
-        name: 'amount',
-        type: 'INTEGER',
-        description: 'Amount of levels to add',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('addlevels')
+    .setDescription('Add levels to a user')
+    .addUserOption(option => 
+      option.setName('user')
+        .setDescription('The user to add levels to')
+        .setRequired(true)
+    )
+    .addIntegerOption(option => 
+      option.setName('amount')
+        .setDescription('Amount of levels to add')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const user = interaction.options.getUser('user');
     const amount = interaction.options.getInteger('amount');
@@ -33,11 +28,11 @@ module.exports = {
     userData.level += amount;
     await userData.save();
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('GREEN')
       .setTitle('Levels Added')
       .setDescription(`${user.username} has been given **${amount} levels**!`)
-      .addField('New Level', `${userData.level}`, true)
+      .addFields({ name: 'New Level', value: `${userData.level}`, inline: true })
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed] });
