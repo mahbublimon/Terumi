@@ -1,26 +1,21 @@
-// src/commands/server/addExperience.js
-const { MessageEmbed } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const User = require('../../models/User');
 
 module.exports = {
-  data: {
-    name: 'add experience',
-    description: 'Add or remove experience from a user',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'The user to add experience to',
-        required: true,
-      },
-      {
-        name: 'amount',
-        type: 'INTEGER',
-        description: 'The amount of experience to add',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('addexperience')
+    .setDescription('Add or remove experience from a user')
+    .addUserOption(option => 
+      option.setName('user')
+        .setDescription('The user to add experience to')
+        .setRequired(true)
+    )
+    .addIntegerOption(option => 
+      option.setName('amount')
+        .setDescription('The amount of experience to add')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const user = interaction.options.getUser('user');
     const amount = interaction.options.getInteger('amount');
@@ -33,7 +28,7 @@ module.exports = {
     userData.experience += amount;
     await userData.save();
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('GREEN')
       .setTitle('Experience Added')
       .setDescription(`${user.username} has been given **${amount} experience points**!`)
