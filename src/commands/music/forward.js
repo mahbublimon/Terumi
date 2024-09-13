@@ -2,18 +2,15 @@
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'forward',
-    description: 'Fast forward the current song by a specified amount of seconds',
-    options: [
-      {
-        name: 'seconds',
-        type: 'INTEGER',
-        description: 'The number of seconds to fast forward',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('forward')
+    .setDescription('Fast forward the current song by a specified amount of seconds')
+    .addIntegerOption(option => 
+      option.setName('seconds')
+        .setDescription('The number of seconds to fast forward')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const queue = player.getQueue(interaction.guild.id);
     const seconds = interaction.options.getInteger('seconds');
