@@ -1,19 +1,16 @@
-// src/commands/music/volume.js
+const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
-  data: {
-    name: 'volume',
-    description: 'Set the volume of the music',
-    options: [
-      {
-        name: 'level',
-        type: 'INTEGER',
-        description: 'Volume level (1-100)',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('volume')
+    .setDescription('Set the volume of the music')
+    .addIntegerOption(option =>
+      option.setName('level')
+        .setDescription('Volume level (1-100)')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const volume = interaction.options.getInteger('level');
     const queue = player.getQueue(interaction.guild.id);
