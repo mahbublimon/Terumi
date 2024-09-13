@@ -11,12 +11,16 @@ const player = new Player(client, {
 
 // Event: When a track starts playing
 player.on('trackStart', (queue, track) => {
-  queue.metadata.channel.send(`🎶 Now playing: **${track.title}**`);
+  if (queue.metadata && queue.metadata.channel) {
+    queue.metadata.channel.send(`🎶 Now playing: **${track.title}**`);
+  }
 });
 
 // Event: When the queue has ended
 player.on('queueEnd', (queue) => {
-  queue.metadata.channel.send('The queue has ended.');
+  if (queue.metadata && queue.metadata.channel) {
+    queue.metadata.channel.send('The queue has ended.');
+  }
 });
 
 module.exports = player;
