@@ -15,7 +15,7 @@ const client = new Client({
 client.commands = new Collection();
 
 // Track message count for stats
-let messageCount = 0;
+let messageCount = 0;  // Use 'let' here to allow reassignment later
 
 // Export both the client and messageCount for use in other parts of the application
 module.exports = { client, messageCount };
