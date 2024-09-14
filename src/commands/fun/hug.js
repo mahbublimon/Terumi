@@ -11,18 +11,16 @@ module.exports = {
         .setRequired(true)),
 
   async execute(interaction) {
-    const apiKey = process.env.GIPHY_API_KEY; // Store your Giphy API key in .env
-
-    try {
-      const response = await axios.get('https://api.giphy.com/v1/gifs/random', {
-        params: {
-          api_key: apiKey,  // Correctly pass the API key here
-          tag: 'hug',
-        },
-      });
+    const target = interaction.options.getUser('user');
+    const gifResponse = await axios.get(`https://api.giphy.com/v1/gifs/random`, {
+      params: {
+        api_key: process.env.GIPHY_API,
+        tag: 'hug',
+      },
+    });
 
     const gifUrl = gifResponse.data.data.images.original.url;
 
     await interaction.reply(`${interaction.user.username} hugged ${target.username}! ${gifUrl}`);
   },
-};
+}
