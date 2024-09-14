@@ -1,21 +1,19 @@
-// src/commands/tickets/createTicket.js
-const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
-const ticketHandler = require('../../utils/ticketHandler');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'create-ticket-message',
-    description: 'Send the ticket creation message with buttons',
-  },
+  data: new SlashCommandBuilder()
+    .setName('create-ticket-message')
+    .setDescription('Send the ticket creation message with buttons'),
+
   async execute(interaction) {
-    const ticketRow = new MessageActionRow().addComponents(
-      new MessageButton()
+    const ticketRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
         .setCustomId('create_ticket')
         .setLabel('Create Ticket')
-        .setStyle('PRIMARY')
+        .setStyle(ButtonStyle.Primary)
     );
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('BLUE')
       .setTitle('Support Ticket')
       .setDescription('Click the button below to create a support ticket.');
