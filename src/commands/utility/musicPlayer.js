@@ -1,5 +1,4 @@
-// src/utils/musicPlayer.js
-const { DisTube } = require('@distube/disnake');
+const { DisTube } = require('distube'); // Corrected import
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = (client) => {
