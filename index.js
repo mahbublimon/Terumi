@@ -1,5 +1,5 @@
 require('dotenv').config(); // Load environment variables
-const { client, messageCount } = require('./bot'); // Import client and messageCount from bot.js
+const { client } = require('./bot'); // Import client from bot.js
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const connectDB = require('./database'); // Import the database connection function
@@ -42,7 +42,6 @@ function setPresence() {
 async function registerSlashCommands() {
   const commandFolders = fs.readdirSync('./src/commands');
   const commands = [];
-  const commandNames = new Set(); // Track command names to avoid duplicates
 
   for (const folder of commandFolders) {
     const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
@@ -52,13 +51,8 @@ async function registerSlashCommands() {
 
       // Ensure the command uses SlashCommandBuilder
       if (command.data && typeof command.data.toJSON === 'function' && command.execute) {
-        if (commandNames.has(command.data.name)) {
-          console.error(`Duplicate command name found: ${command.data.name} in ${file}`);
-        } else {
-          commandNames.add(command.data.name); // Track command name
-          client.commands.set(command.data.name, command);
-          commands.push(command.data.toJSON()); // Prepare for registration
-        }
+        client.commands.set(command.data.name, command);
+        commands.push(command.data.toJSON()); // Prepare for registration
       } else {
         console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property, or is not using SlashCommandBuilder.`);
       }
@@ -104,18 +98,6 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
   }
 });
-
-// Track number of messages per minute for dashboard stats
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return; // Ignore bot messages
-
-  messageCount++; // Increment message count
-});
-
-// Reset the message count every minute
-setInterval(() => {
-  messageCount = 0; // Reset message count every 60 seconds
-}, 60000);
 
 // Log in to Discord using the bot token from .env
 client.login(process.env.TOKEN).catch((error) => {
