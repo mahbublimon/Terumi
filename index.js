@@ -42,6 +42,7 @@ function setPresence() {
 async function registerSlashCommands() {
   const commandFolders = fs.readdirSync('./src/commands');
   const commands = [];
+  const commandNames = new Set(); // Track command names to avoid duplicates
 
   for (const folder of commandFolders) {
     const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
@@ -51,8 +52,13 @@ async function registerSlashCommands() {
 
       // Ensure the command uses SlashCommandBuilder
       if (command.data && typeof command.data.toJSON === 'function' && command.execute) {
-        client.commands.set(command.data.name, command);
-        commands.push(command.data.toJSON()); // Prepare for registration
+        if (commandNames.has(command.data.name)) {
+          console.error(`Duplicate command name found: ${command.data.name} in ${file}`);
+        } else {
+          commandNames.add(command.data.name); // Track command name
+          client.commands.set(command.data.name, command);
+          commands.push(command.data.toJSON()); // Prepare for registration
+        }
       } else {
         console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property, or is not using SlashCommandBuilder.`);
       }
