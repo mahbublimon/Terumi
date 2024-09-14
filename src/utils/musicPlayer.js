@@ -1,26 +1,22 @@
-const { Player } = require('discord-player');
-const { client } = require('../../bot'); // Correct relative path to bot.js
+const { DisTube } = require('distube'); // Corrected import
+const { EmbedBuilder } = require('discord.js');
 
-// Initialize the player with proper options
-const player = new Player(client, {
-  ytdlOptions: {
-    quality: 'highestaudio',
-    highWaterMark: 1 << 25, // Adjust buffer size to handle larger streams
-  },
-});
+module.exports = (client) => {
+  const distube = new DisTube(client, { emitNewSongOnly: true });
 
-// Event: When a track starts playing
-player.on('trackStart', (queue, track) => {
-  if (queue.metadata && queue.metadata.channel) {
-    queue.metadata.channel.send(`🎶 Now playing: **${track.title}**`);
-  }
-});
+  client.distube = distube;
 
-// Event: When the queue has ended
-player.on('queueEnd', (queue) => {
-  if (queue.metadata && queue.metadata.channel) {
-    queue.metadata.channel.send('The queue has ended.');
-  }
-});
-
-module.exports = player;
+  client.distube
+    .on('playSong', (queue, song) => {
+      const embed = new EmbedBuilder()
+        .setTitle('Now Playing')
+        .setDescription(`[${song.name}](${song.url}) - \`${song.formattedDuration}\``);
+      queue.textChannel.send({ embeds: [embed] });
+    })
+    .on('addSong', (queue, song) => {
+      const embed = new EmbedBuilder()
+        .setTitle('Added to Queue')
+        .setDescription(`[${song.name}](${song.url}) - \`${song.formattedDuration}\``);
+      queue.textChannel.send({ embeds: [embed] });
+    });
+};
