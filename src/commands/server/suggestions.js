@@ -1,26 +1,20 @@
-// src/commands/server/suggestions.js
-const { MessageEmbed } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const Suggestion = require('../../models/Suggestion');
 
 module.exports = {
-  data: {
-    name: 'suggestions',
-    description: 'Manage suggestions',
-    options: [
-      {
-        name: 'accept',
-        type: 'STRING',
-        description: 'Accept a suggestion by ID',
-        required: true,
-      },
-      {
-        name: 'comment',
-        type: 'STRING',
-        description: 'Comment on the suggestion',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('suggestions')
+    .setDescription('Manage suggestions')
+    .addStringOption(option =>
+      option.setName('accept')
+        .setDescription('Accept a suggestion by ID')
+        .setRequired(true)
+    )
+    .addStringOption(option => 
+      option.setName('comment')
+        .setDescription('Comment on the suggestion')
+        .setRequired(true)
+    ),
   async execute(interaction) {
     const suggestionId = interaction.options.getString('accept');
     const comment = interaction.options.getString('comment');
@@ -34,7 +28,7 @@ module.exports = {
     suggestion.comment = comment;
     await suggestion.save();
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('GREEN')
       .setTitle('Suggestion Accepted')
       .setDescription(`**Suggestion ID**: ${suggestionId}\n**Comment**: ${comment}`)
