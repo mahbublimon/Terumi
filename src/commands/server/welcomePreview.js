@@ -1,5 +1,4 @@
-// src/commands/server/welcomePreview.js
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   data: {
@@ -16,7 +15,7 @@ module.exports = {
   },
   async execute(interaction) {
     const user = interaction.options.getUser('user');
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('YELLOW')
       .setTitle('Welcome Message Preview')
       .setDescription(`Welcome, **${user.username}** to the server! We hope you enjoy your stay! 🎉`)
