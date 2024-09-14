@@ -14,7 +14,7 @@ module.exports = {
     const target = interaction.options.getUser('user');
     const gifResponse = await axios.get(`https://api.giphy.com/v1/gifs/random`, {
       params: {
-        api_key: process.env.GIPHY_SDK,
+        api_key: process.env.GIPHY_API,
         tag: 'hug',
       },
     });
