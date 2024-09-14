@@ -1,19 +1,15 @@
-// src/commands/tickets/ticketChannel.js
+const { SlashCommandBuilder } = require('discord.js');
 const TicketSettings = require('../../models/TicketSettings');
 
 module.exports = {
-  data: {
-    name: 'ticket-channel',
-    description: 'Set the ticket channel',
-    options: [
-      {
-        name: 'channel',
-        type: 'CHANNEL',
-        description: 'Channel where tickets will be created',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('ticket-channel')
+    .setDescription('Set the ticket channel')
+    .addChannelOption(option => 
+      option.setName('channel')
+        .setDescription('Channel where tickets will be created')
+        .setRequired(true)
+    ),
   async execute(interaction) {
     const channel = interaction.options.getChannel('channel');
 
