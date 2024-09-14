@@ -107,6 +107,7 @@ client.on('messageCreate', async (message) => {
 });
 
 // Reset the message count every minute
+let messageCount = 0; // Use 'let' instead of 'const'
 setInterval(() => {
   messageCount = 0; // Reset message count every 60 seconds
 }, 60000);
