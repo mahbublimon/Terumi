@@ -1,23 +1,19 @@
-// src/commands/tickets/ticketManagerRole.js
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const TicketSettings = require('../../models/TicketSettings');
 
 module.exports = {
-  data: {
-    name: 'ticket-manager-role',
-    description: 'Set or update roles that can manage tickets',
-    options: [
-      {
-        name: 'role',
-        type: 'ROLE',
-        description: 'Role that can manage tickets',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('ticket-manager-role')
+    .setDescription('Set or update roles that can manage tickets')
+    .addRoleOption(option => 
+      option.setName('role')
+        .setDescription('Role that can manage tickets')
+        .setRequired(true)
+    ),
   async execute(interaction) {
     const role = interaction.options.getRole('role');
-
     let settings = await TicketSettings.findOne({ guildID: interaction.guild.id });
+
     if (!settings) {
       settings = new TicketSettings({ guildID: interaction.guild.id });
     }
@@ -29,6 +25,12 @@ module.exports = {
     settings.managerRoles.push(role.id);
     await settings.save();
 
-    return interaction.reply({ content: `The role **${role.name}** can now manage tickets.`, ephemeral: true });
+    const embed = new EmbedBuilder()
+      .setColor('GREEN')
+      .setTitle('Ticket Manager Role Updated')
+      .setDescription(`The role **${role.name}** can now manage tickets.`)
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed], ephemeral: true });
   },
 };
