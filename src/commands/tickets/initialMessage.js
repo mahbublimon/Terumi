@@ -1,19 +1,15 @@
-// src/commands/tickets/initialMessage.js
+const { SlashCommandBuilder } = require('discord.js');
 const TicketSettings = require('../../models/TicketSettings');
 
 module.exports = {
-  data: {
-    name: 'initial-message',
-    description: 'Customize the first message in new tickets',
-    options: [
-      {
-        name: 'message',
-        type: 'STRING',
-        description: 'The first message sent in a ticket',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('initial-message')
+    .setDescription('Customize the first message in new tickets')
+    .addStringOption(option => 
+      option.setName('message')
+        .setDescription('The first message sent in a ticket')
+        .setRequired(true)
+    ),
   async execute(interaction) {
     const message = interaction.options.getString('message');
 
