@@ -1,4 +1,3 @@
-// src/models/TicketSettings.js
 const { Schema, model } = require('mongoose');
 
 const ticketSettingsSchema = new Schema({
