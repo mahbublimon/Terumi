@@ -1,18 +1,15 @@
-const { EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  data: {
-    name: 'welcome',
-    description: 'Preview the welcome message for a user',
-    options: [
-      {
-        name: 'user',
-        type: 'USER',
-        description: 'The user to preview the welcome message for',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('welcome-preview') // Changed command name to be unique
+    .setDescription('Preview the welcome message for a user')
+    .addUserOption(option =>
+      option.setName('user')
+        .setDescription('The user to preview the welcome message for')
+        .setRequired(true)
+    ),
+  
   async execute(interaction) {
     const user = interaction.options.getUser('user');
     const embed = new EmbedBuilder()
