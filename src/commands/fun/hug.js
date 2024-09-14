@@ -17,7 +17,7 @@ module.exports = {
         api_key: process.env.GIPHY_API,
         tag: 'hug',
       },
-    };
+    });
 
     const gifUrl = gifResponse.data.data.images.original.url;
 
