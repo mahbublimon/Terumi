@@ -1,19 +1,15 @@
-// src/commands/tickets/transcriptChannel.js
+const { SlashCommandBuilder } = require('discord.js');
 const TicketSettings = require('../../models/TicketSettings');
 
 module.exports = {
-  data: {
-    name: 'transcript-channel',
-    description: 'Set the transcript channel for closed tickets',
-    options: [
-      {
-        name: 'channel',
-        type: 'CHANNEL',
-        description: 'Channel where transcripts will be logged',
-        required: true,
-      },
-    ],
-  },
+  data: new SlashCommandBuilder()
+    .setName('transcript-channel')
+    .setDescription('Set the transcript channel for closed tickets')
+    .addChannelOption(option => 
+      option.setName('channel')
+        .setDescription('Channel where transcripts will be logged')
+        .setRequired(true)
+    ),
   async execute(interaction) {
     const channel = interaction.options.getChannel('channel');
 
