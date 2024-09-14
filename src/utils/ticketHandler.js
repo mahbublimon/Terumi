@@ -1,5 +1,4 @@
-// src/utils/ticketHandler.js
-const { MessageEmbed, Permissions } = require('discord.js');
+const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const Ticket = require('../models/Ticket');
 const TicketSettings = require('../models/TicketSettings');
 
@@ -21,21 +20,22 @@ module.exports = {
     }
 
     // Create a new ticket channel under the ticket category
-    const ticketChannel = await guild.channels.create(`ticket-${user.username}`, {
-      type: 'GUILD_TEXT',
+    const ticketChannel = await guild.channels.create({
+      name: `ticket-${user.username}`,
+      type: 0, // GUILD_TEXT type
       parent: settings.ticketChannel,
       permissionOverwrites: [
         {
-          id: guild.roles.everyone,
-          deny: [Permissions.FLAGS.VIEW_CHANNEL],
+          id: guild.roles.everyone.id,
+          deny: [PermissionsBitField.Flags.ViewChannel],
         },
         {
           id: user.id,
-          allow: [Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.SEND_MESSAGES],
+          allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
         },
-        ...settings.managerRoles.map((roleID) => ({
+        ...settings.managerRoles.map(roleID => ({
           id: roleID,
-          allow: [Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.SEND_MESSAGES],
+          allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
         })),
       ],
     });
@@ -49,7 +49,7 @@ module.exports = {
     });
 
     // Send the initial message in the ticket channel
-    const initialEmbed = new MessageEmbed()
+    const initialEmbed = new EmbedBuilder()
       .setColor('GREEN')
       .setDescription(settings.initialMessage || 'Please describe your issue, and a support team member will assist you shortly.');
 
@@ -84,10 +84,10 @@ module.exports = {
 
     // Fetch all messages from the ticket channel for the transcript
     const messages = await ticketChannel.messages.fetch();
-    const transcript = messages.map((msg) => `${msg.author.tag}: ${msg.content}`).reverse().join('\n');
+    const transcript = messages.map(msg => `${msg.author.tag}: ${msg.content}`).reverse().join('\n');
 
     // Send the transcript to the transcript channel
-    const transcriptEmbed = new MessageEmbed()
+    const transcriptEmbed = new EmbedBuilder()
       .setColor('ORANGE')
       .setTitle(`Ticket Closed: ${ticketChannel.name}`)
       .setDescription(`**Transcript:**\n${transcript}`);
