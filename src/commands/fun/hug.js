@@ -21,6 +21,6 @@ module.exports = {
 
     const gifUrl = gifResponse.data.data.images.original.url;
 
-    await interaction.reply(`${interaction.user.username} hugged ${target.username}!`);
+    await interaction.reply(`${interaction.user.username} hugged ${target.username}! ${gifUrl}`);
   },
 }
