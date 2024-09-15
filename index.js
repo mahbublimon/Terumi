@@ -19,9 +19,13 @@ app.use(express.static(path.join(__dirname, 'src/dashboard/public')));
 const dashboardRoutes = require('./src/dashboard/routes/dashboard');
 app.use('/api', dashboardRoutes);
 
-// Start the Express dashboard server
-app.listen(PORT, () => {
-  console.log(`Dashboard running on port ${PORT}`);
+// Start the Express dashboard server with error handling
+app.listen(PORT, (error) => {
+  if (error) {
+    console.error(`Error starting dashboard server: ${error.message}`);
+  } else {
+    console.log(`Dashboard running on port ${PORT}`);
+  }
 });
 
 // Connect to MongoDB using the `database.js` file
@@ -57,6 +61,7 @@ async function registerSlashCommands() {
       if (command.data && typeof command.data.toJSON === 'function' && command.execute) {
         client.commands.set(command.data.name, command);
         commands.push(command.data.toJSON()); // Prepare for registration
+        console.log(`Registered command: ${command.data.name}`);
       } else {
         console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property, or is not using SlashCommandBuilder.`);
       }
@@ -93,7 +98,9 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
-  if (!command) return;
+  if (!command) {
+    return interaction.reply({ content: 'Unknown command!', ephemeral: true });
+  }
 
   try {
     await command.execute(interaction);
