@@ -1,4 +1,4 @@
-const { DisTube } = require('distube'); // Corrected import
+const { DisTube } = require('distube');
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = (client) => {
