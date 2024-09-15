@@ -59,12 +59,32 @@ h2 {
   margin-bottom: 20px;
 }
 
-.stats p {
+/* Stats Box */
+.stats-box {
+  background-color: #222;
+  padding: 20px;
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  gap: 20px;
+  align-items: center;
+  justify-items: center;
+}
+
+.stats-row {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.stats-row p {
   font-size: 1.2em;
   margin: 10px 0;
 }
 
-.stats span {
+.stats-row span {
+  font-size: 1.1em;
   font-weight: bold;
   color: #FFD700;
 }
