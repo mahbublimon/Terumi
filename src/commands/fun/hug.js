@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -21,6 +21,12 @@ module.exports = {
 
     const gifUrl = gifResponse.data.data.images.original.url;
 
-    await interaction.reply(`${interaction.user.username} hugged ${target.username}! ${gifUrl}`);
+    // Create an embed to hide the URL but display the GIF
+    const embed = new EmbedBuilder()
+      .setDescription(`${interaction.user.username} hugged ${target.username}!`)
+      .setImage(gifUrl)  // Display the GIF
+      .setColor(0xFFC0CB);  // Optional: Set a color for the embed
+
+    await interaction.reply({ embeds: [embed] });
   },
-}
+};
