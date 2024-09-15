@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { client } = require('../../../index'); // Access bot client
+const { client } = require('../../../bot'); // Access bot client
 
 // API endpoint for bot statistics
 router.get('/stats', (req, res) => {
@@ -13,9 +13,10 @@ router.get('/stats', (req, res) => {
   res.json({
     servers: totalServers,
     users: totalUsers,
-    cachedUsers,
+    cachedUsers: cachedUsers,
     channels: totalChannels,
-    uptime
+    messagesPerMinute: 0,  // Placeholder, you can implement message count tracking
+    uptime: uptime
   });
 });
 
