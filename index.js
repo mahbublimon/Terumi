@@ -6,6 +6,7 @@ const connectDB = require('./database'); // Import the database connection funct
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const musicPlayer = require('./src/utils/musicPlayer'); // Import musicPlayer utility
 
 // Initialize Express App for Dashboard
 const app = express();
@@ -25,6 +26,9 @@ app.listen(PORT, () => {
 
 // Connect to MongoDB using the `database.js` file
 connectDB();
+
+// Pass client to musicPlayer
+musicPlayer(client); // Pass the client to the musicPlayer module
 
 // Bot ready event
 client.once('ready', async () => {
