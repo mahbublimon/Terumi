@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         usersElement.textContent = data.users;
         cachedUsersElement.textContent = data.cachedUsers;
         channelsElement.textContent = data.channels;
-        messagesPerMinuteElement.textContent = data.messagesPerMinute || 'N/A';
+        messagesPerMinuteElement.textContent = data.messagesPerMinute;
         uptimeElement.textContent = formatUptime(data.uptime);
       })
       .catch(err => console.error('Error fetching stats:', err));
