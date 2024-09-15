@@ -28,6 +28,16 @@ app.listen(PORT, (error) => {
   }
 });
 
+// Route for Premium Page
+app.get('/premium', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/dashboard/public/premium.html'));
+});
+
+// Route for Discord Authentication (You need to implement this fully)
+app.get('/auth/discord', (req, res) => {
+  res.redirect('https://discord.com/oauth2/authorize?client_id=YOUR_DISCORD_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=identify');
+});
+
 // Connect to MongoDB using the `database.js` file
 connectDB();
 
