@@ -10,12 +10,15 @@ router.get('/stats', (req, res) => {
   const totalChannels = client.channels.cache.size;
   const totalServers = client.guilds.cache.size;
 
+  // You can calculate messages per minute and store it somewhere
+  const messagesPerMinute = 0; // Placeholder, you can implement this
+
   res.json({
     servers: totalServers,
     users: totalUsers,
     cachedUsers: cachedUsers,
     channels: totalChannels,
-    messagesPerMinute: 0,  // Placeholder, you can implement message count tracking
+    messagesPerMinute: messagesPerMinute,
     uptime: uptime
   });
 });
