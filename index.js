@@ -16,10 +16,10 @@ const PORT = process.env.PORT || 3000; // Set dynamic port based on environment
 
 // Configure session middleware
 app.use(session({
-  secret: 'your-secret-key', // Replace with a secure key
+  secret: process.env.SESSION_SECRET || 'your-secret-key', // Use env var for secret key
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // Set to true if using HTTPS
+  cookie: { secure: process.env.NODE_ENV === 'production' }, // Ensure secure cookies in production
 }));
 
 // Serve static files for the dashboard (HTML, CSS, JS)
