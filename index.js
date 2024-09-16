@@ -6,8 +6,11 @@ const connectDB = require('./database'); // Import the database connection funct
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 const session = require('express-session'); // For session management
-const musicPlayer = require('./src/utils/musicPlayer'); // Import musicPlayer utility
+
+// Import the musicPlayer module and initialize it
+const { player, searchSpotifyTrack, playSpotifyTrack } = require('./src/utils/musicPlayer')(client);
 
 // Initialize Express App for Dashboard
 const app = express();
@@ -116,9 +119,6 @@ app.get('/auth/logout', (req, res) => {
 
 // Connect to MongoDB using the `database.js` file
 connectDB();
-
-// Initialize the music player and pass the Discord client
-musicPlayer(client); // Pass the client to initialize the music player
 
 // Bot ready event
 client.once('ready', async () => {
