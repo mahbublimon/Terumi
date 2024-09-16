@@ -8,10 +8,19 @@ const path = require('path');
 const fs = require('fs');
 const musicPlayer = require('./src/utils/musicPlayer'); // Import musicPlayer utility
 const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
+const session = require('express-session'); // For session management
 
 // Initialize Express App for Dashboard
 const app = express();
 const PORT = process.env.PORT || 3000; // Set dynamic port based on environment
+
+// Configure session middleware
+app.use(session({
+  secret: 'your-secret-key', // Replace with a secure key
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
+}));
 
 // Serve static files for the dashboard (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'src/dashboard/public')));
@@ -76,12 +85,34 @@ app.get('/auth/discord/callback', async (req, res) => {
 
     const user = userResponse.data;
 
-    // Here, you can store user data in the session or database
-    res.send(`Logged in as ${user.username}#${user.discriminator}`);
+    // Store user data in session
+    req.session.user = user;
+
+    // Redirect user to dashboard or home page
+    res.redirect('/dashboard'); // Redirect after successful login
   } catch (error) {
     console.error('Error during Discord OAuth2 callback:', error.message);
     res.status(500).send('Authentication failed');
   }
+});
+
+// Route to serve the dashboard page
+app.get('/dashboard', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/auth/discord'); // Redirect to login if not authenticated
+  }
+
+  res.send(`Welcome to your dashboard, ${req.session.user.username}!`);
+});
+
+// Route for logout
+app.get('/auth/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).send('Failed to log out');
+    }
+    res.redirect('/'); // Redirect to home page or login
+  });
 });
 
 // Connect to MongoDB using the `database.js` file
