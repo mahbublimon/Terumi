@@ -1,42 +1,12 @@
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const { Player } = require('discord-player'); // Import discord-player
-const spotifyApi = require('./spotifyClient'); // Spotify API for search
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
+const { Player } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
+const spotifyApi = require('./spotifyClient'); // Spotify API for searching tracks
 
-// Initialize the Player instance from discord-player
-module.exports = (client) => {
-  const player = new Player(client, {
-    ytdlOptions: {
-      quality: 'highestaudio',
-      highWaterMark: 1 << 25, // Ensures better performance when streaming audio
-    },
-  });
-
-  client.player = player; // Attach the player instance to the Discord client
-
-  player.on('error', (queue, error) => {
-    console.error(`Error in the player: ${error.message}`);
-  });
-
-  player.on('trackStart', (queue, track) => {
-    queue.metadata.send(`🎶 Now playing **${track.title}**!`);
-  });
-
-  player.on('trackAdd', (queue, track) => {
-    queue.metadata.send(`🎶 Track **${track.title}** added to the queue!`);
-  });
-
-  player.on('botDisconnect', (queue) => {
-    queue.metadata.send('Bot was disconnected from the voice channel.');
-  });
-
-  return player; // Return the player instance for handling YouTube and other sources
-};
-
-// Define the Spotify-based music player
 const musicPlayer = {};
+const player = new Player(); // Instance of discord-player
 
-// Function to play a track from Spotify
+// Function to play music
 musicPlayer.play = async (interaction, trackUrl, trackInfo) => {
   const voiceChannel = interaction.member.voice.channel;
 
@@ -49,26 +19,39 @@ musicPlayer.play = async (interaction, trackUrl, trackInfo) => {
     channelId: voiceChannel.id,
     guildId: interaction.guild.id,
     adapterCreator: interaction.guild.voiceAdapterCreator,
+    selfDeaf: false,
   });
 
-  // Create an audio player and resource
-  const audioPlayer = createAudioPlayer();
-  const resource = createAudioResource(trackUrl);
+  // Handle connection errors or disconnects
+  connection.on(VoiceConnectionStatus.Disconnected, async () => {
+    try {
+      await Promise.race([
+        entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+        entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+      ]);
+      // If the connection re-establishes itself, continue playing music.
+    } catch (error) {
+      connection.destroy(); // Disconnect from the voice channel
+    }
+  });
 
-  // Play the resource
-  audioPlayer.play(resource);
-  connection.subscribe(audioPlayer);
+  const audioPlayer = createAudioPlayer(); // Create the audio player
+  const resource = createAudioResource(trackUrl); // Create the audio resource from the track URL
 
+  audioPlayer.play(resource); // Play the audio resource
+  connection.subscribe(audioPlayer); // Subscribe the connection to the audio player
+
+  // Handle when the track ends
   audioPlayer.on(AudioPlayerStatus.Idle, () => {
-    connection.destroy(); // Leave the channel when the track ends
+    connection.destroy(); // Disconnect when the song ends
   });
 
-  // Send the "Now Playing" embed message
+  // Send "Now Playing" embed
   const playEmbed = new EmbedBuilder()
     .setTitle('🎶 Now Playing')
     .setDescription(`**[${trackInfo.name}](${trackInfo.external_urls.spotify})** by ${trackInfo.artists.map(artist => artist.name).join(', ')}`)
     .setThumbnail(trackInfo.album.images[0].url)
-    .setColor('#1DB954'); // Spotify Green color
+    .setColor('#1DB954'); // Spotify Green
 
   await interaction.reply({ embeds: [playEmbed] });
 };
@@ -85,4 +68,4 @@ musicPlayer.searchSpotifyTrack = async (query) => {
   }
 };
 
-module.exports.spotifyPlayer = musicPlayer; // Export the Spotify player functions
+module.exports = musicPlayer;
