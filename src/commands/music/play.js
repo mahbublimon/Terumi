@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const spotifyApi = require('../../utils/spotifyClient'); // Import the correct Spotify client
+const musicPlayer = require('../../utils/musicPlayer'); // Updated import
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
@@ -22,21 +22,15 @@ module.exports = {
 
     try {
       // Use Spotify API to search for the track
-      const result = await spotifyApi.searchTracks(query);
-      const track = result.body.tracks.items[0];
+      const track = await musicPlayer.searchSpotifyTrack(query);
 
       if (!track) {
         return interaction.reply({ content: `No results found for ${query}!`, ephemeral: true });
       }
 
-      // Send "Now Playing" embed
-      const playEmbed = new EmbedBuilder()
-        .setTitle('🎶 Now Playing')
-        .setDescription(`**[${track.name}](${track.external_urls.spotify})** by ${track.artists.map(artist => artist.name).join(', ')}`)
-        .setThumbnail(track.album.images[0].url)
-        .setColor('#1DB954'); // Spotify Green
-
-      return interaction.reply({ embeds: [playEmbed] });
+      // Call the play function
+      const trackUrl = track.external_urls.spotify; // Spotify URL for the track
+      await musicPlayer.play(interaction, trackUrl, track); // Pass track information for playback
     } catch (error) {
       console.error('Error playing music:', error);
       return interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
