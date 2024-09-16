@@ -1,6 +1,6 @@
-const { Player } = require('discord-player'); // Discord Player for managing music
+const { Player } = require('discord-player');
 const { EmbedBuilder } = require('discord.js');
-const { joinVoiceChannel, createAudioResource, createAudioPlayer, AudioPlayerStatus } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const spotifyApi = require('./spotifyClient'); // Import the Spotify API client
 
 module.exports = (client) => {
@@ -12,7 +12,7 @@ module.exports = (client) => {
         }
     });
 
-    // Search for a track on Spotify
+    // Function to search for a track on Spotify
     async function searchSpotifyTrack(query) {
         try {
             const result = await spotifyApi.searchTracks(query);
@@ -24,7 +24,7 @@ module.exports = (client) => {
         }
     }
 
-    // Function to play the Spotify track in the voice channel
+    // Function to play a Spotify track in a voice channel
     async function playSpotifyTrack(interaction, trackInfo) {
         const voiceChannel = interaction.member.voice.channel;
 
@@ -57,5 +57,5 @@ module.exports = (client) => {
         await interaction.reply({ embeds: [embed] });
     }
 
-    return { searchSpotifyTrack, playSpotifyTrack, player };
+    return { searchSpotifyTrack, playSpotifyTrack, player }; // Export the necessary functions
 };
