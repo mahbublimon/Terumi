@@ -5,6 +5,137 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Terumi Premium</title>
   <link rel="stylesheet" href="/styles.css"> <!-- Link to the external stylesheet -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    header {
+      background-color: #4CAF50;
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 40px auto;
+    }
+
+    /* Pricing Plans Section */
+    .pricing-table {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .plan {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: calc(33.333% - 20px);
+      margin: 20px 0;
+      padding: 20px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .plan h2 {
+      font-size: 24px;
+      color: #333;
+    }
+
+    .plan h3 {
+      font-size: 36px;
+      margin: 20px 0;
+      color: #4CAF50;
+    }
+
+    .plan ul {
+      list-style-type: none;
+      padding: 0;
+      font-size: 16px;
+      color: #555;
+    }
+
+    .plan ul li {
+      padding: 10px;
+    }
+
+    .plan button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .plan button:hover {
+      background-color: #45a049;
+    }
+
+    /* Key Features Section */
+    .features {
+      margin: 40px 0;
+      text-align: center;
+    }
+
+    .features h2 {
+      font-size: 30px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .features ul {
+      font-size: 18px;
+      color: #555;
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .features ul li {
+      margin: 10px 0;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      margin-top: 40px;
+    }
+
+    .footer nav ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 10px;
+    }
+
+    .footer nav ul li {
+      display: inline;
+    }
+
+    .footer nav ul li a {
+      color: white;
+      text-decoration: none;
+    }
+    
+    .footer nav ul li a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
@@ -75,7 +206,14 @@
   </div>
 </div>
 
+<!-- Footer -->
 <div class="footer">
+  <nav>
+    <ul>
+      <li><a href="/termsofservice.html">Terms of Service</a></li>
+      <li><a href="/privacypolicy.html">Privacy Policy</a></li>
+    </ul>
+  </nav>
   <p>© 2024 Terumi. All rights reserved.</p>
 </div>
 
