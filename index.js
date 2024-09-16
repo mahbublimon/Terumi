@@ -7,6 +7,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const musicPlayer = require('./src/utils/musicPlayer'); // Import musicPlayer utility
+const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 
 // Initialize Express App for Dashboard
 const app = express();
@@ -33,9 +34,54 @@ app.get('/premium', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/dashboard/public/premium.html'));
 });
 
-// Route for Discord Authentication (You need to implement this fully)
+// Route for Discord Authentication (OAuth2)
 app.get('/auth/discord', (req, res) => {
-  res.redirect('https://discord.com/oauth2/authorize?client_id=YOUR_DISCORD_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=identify');
+  const clientId = process.env.DISCORD_CLIENT_ID;
+  const redirectUri = encodeURIComponent(process.env.REDIRECT_URI);
+
+  const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
+  
+  res.redirect(discordAuthUrl);
+});
+
+// Route for handling the Discord OAuth2 callback
+app.get('/auth/discord/callback', async (req, res) => {
+  const { code } = req.query;
+  const redirectUri = process.env.REDIRECT_URI;
+  const clientId = process.env.DISCORD_CLIENT_ID;
+  const clientSecret = process.env.DISCORD_CLIENT_SECRET;
+
+  if (!code) {
+    return res.status(400).send('Authorization code not provided');
+  }
+
+  try {
+    // Exchange code for access token
+    const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+    }).toString(), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+
+    const { access_token } = tokenResponse.data;
+
+    // Use access token to fetch user data
+    const userResponse = await axios.get('https://discord.com/api/users/@me', {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+
+    const user = userResponse.data;
+
+    // Here, you can store user data in the session or database
+    res.send(`Logged in as ${user.username}#${user.discriminator}`);
+  } catch (error) {
+    console.error('Error during Discord OAuth2 callback:', error.message);
+    res.status(500).send('Authentication failed');
+  }
 });
 
 // Connect to MongoDB using the `database.js` file
