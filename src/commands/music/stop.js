@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
     const queue = player.getQueue(interaction.guild.id);
 
     if (!queue || !queue.playing) {
-      return interaction.reply({ content: 'There is no music to stop!', ephemeral: true });
+      return interaction.reply({ content: 'There is no music playing to stop!', ephemeral: true });
     }
 
     queue.destroy();
