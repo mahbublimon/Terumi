@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders'); // Add this import
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const player = require('../../utils/musicPlayer');
 
 module.exports = {
@@ -16,7 +16,7 @@ module.exports = {
     const time = interaction.options.getString('time');
 
     if (!queue || !queue.playing) {
-      return interaction.reply({ content: 'There is no music playing!', ephemeral: true });
+      return interaction.reply({ content: 'There is no music playing to seek!', ephemeral: true });
     }
 
     const [minutes, seconds] = time.split(':').map(Number);
