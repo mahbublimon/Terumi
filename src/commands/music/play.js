@@ -22,8 +22,8 @@ module.exports = {
     }
 
     try {
-      // Play the track in the voice channel
-      await playSpotifyTrack(interaction, track.preview_url || track.external_urls.spotify);
+      // Play the track in the voice channel using the preview URL
+      await playSpotifyTrack(interaction, track.preview_url);
 
       // Send a reply to let the user know the track is playing
       await interaction.reply({ content: `Now playing: **${track.name}** by ${track.artists.map(artist => artist.name).join(', ')}` });
