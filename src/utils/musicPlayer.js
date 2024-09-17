@@ -1,44 +1,37 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const { EmbedBuilder } = require('discord.js');
 const SpotifyWebApi = require('spotify-web-api-node');
+const { EmbedBuilder } = require('discord.js');
 
-// Set up the Spotify API client
+// Initialize Spotify API
 const spotifyApi = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
 });
 
-// Refresh the access token for Spotify every hour
-const refreshToken = async () => {
+const refreshSpotifyToken = async () => {
   try {
     const data = await spotifyApi.clientCredentialsGrant();
-    spotifyApi.setAccessToken(data.body['access_token']);
-    console.log('Spotify access token refreshed.');
+    spotifyApi.setAccessToken(data.body.access_token);
+    console.log('Spotify access token refreshed successfully');
   } catch (error) {
-    console.error('Error refreshing Spotify access token:', error);
+    console.error('Error retrieving Spotify access token', error);
   }
 };
 
-// Call the refreshToken function on startup and set an interval to refresh it every hour
-refreshToken();
-setInterval(refreshToken, 3600 * 1000);
+// Refresh token every hour
+setInterval(refreshSpotifyToken, 3600 * 1000);
+refreshSpotifyToken();
 
-// Search for a track on Spotify
-async function searchSpotifyTrack(query) {
-  try {
-    const response = await spotifyApi.searchTracks(query);
-    const track = response.body.tracks.items[0];
-    return track;
-  } catch (error) {
-    console.error('Error searching for track on Spotify:', error);
-    return null;
-  }
+let clientInstance; // To hold the Discord client instance
+
+// Initialize music player with the client
+function initializePlayer(client) {
+  clientInstance = client;
 }
 
-// Play a Spotify track in a voice channel
-async function playSpotifyTrack(interaction, track) {
+async function playSpotifyTrack(interaction, trackUrl) {
   const voiceChannel = interaction.member.voice.channel;
-  
+
   if (!voiceChannel) {
     return interaction.reply({ content: 'You need to be in a voice channel to play music!', ephemeral: true });
   }
@@ -51,31 +44,30 @@ async function playSpotifyTrack(interaction, track) {
   });
 
   const audioPlayer = createAudioPlayer();
+  const resource = createAudioResource(trackUrl);
 
+  audioPlayer.play(resource);
+  connection.subscribe(audioPlayer);
+
+  audioPlayer.on(AudioPlayerStatus.Idle, () => {
+    connection.destroy();
+  });
+
+  return interaction.reply({ content: '🎶 Now playing your Spotify track!' });
+}
+
+async function searchSpotifyTrack(query) {
   try {
-    const resource = createAudioResource(track.preview_url); // Using Spotify preview URL for playback
-    audioPlayer.play(resource);
-    connection.subscribe(audioPlayer);
-
-    audioPlayer.on(AudioPlayerStatus.Idle, () => {
-      connection.destroy();
-    });
-
-    const embed = new EmbedBuilder()
-      .setTitle('Now Playing')
-      .setDescription(`[${track.name}](${track.external_urls.spotify}) by ${track.artists.map(a => a.name).join(', ')}`)
-      .setThumbnail(track.album.images[0].url)
-      .setColor('#1DB954'); // Spotify green
-
-    await interaction.reply({ embeds: [embed] });
-
+    const result = await spotifyApi.searchTracks(query);
+    return result.body.tracks.items[0];
   } catch (error) {
-    console.error('Error playing track:', error);
-    interaction.reply({ content: 'There was an error playing the track.', ephemeral: true });
+    console.error('Error searching Spotify track:', error);
+    return null;
   }
 }
 
 module.exports = {
+  initializePlayer,
   searchSpotifyTrack,
   playSpotifyTrack,
 };
