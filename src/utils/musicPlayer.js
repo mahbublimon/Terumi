@@ -1,73 +1,50 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const SpotifyWebApi = require('spotify-web-api-node');
-const { EmbedBuilder } = require('discord.js');
+const axios = require('axios');
 
-// Initialize Spotify API
-const spotifyApi = new SpotifyWebApi({
-  clientId: process.env.SPOTIFY_CLIENT_ID,
-  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-});
-
-const refreshSpotifyToken = async () => {
-  try {
-    const data = await spotifyApi.clientCredentialsGrant();
-    spotifyApi.setAccessToken(data.body.access_token);
-    console.log('Spotify access token refreshed successfully');
-  } catch (error) {
-    console.error('Error retrieving Spotify access token', error);
-  }
-};
-
-// Refresh token every hour
-setInterval(refreshSpotifyToken, 3600 * 1000);
-refreshSpotifyToken();
-
-let clientInstance; // To hold the Discord client instance
-
-// Initialize music player with the client
+// Function to initialize the player
 function initializePlayer(client) {
-  clientInstance = client;
-}
+  const player = createAudioPlayer();
 
-async function playSpotifyTrack(interaction, trackUrl) {
-  const voiceChannel = interaction.member.voice.channel;
+  // Play Spotify track
+  async function playSpotifyTrack(interaction, trackUrl) {
+    try {
+      const voiceChannel = interaction.member.voice.channel;
 
-  if (!voiceChannel) {
-    return interaction.reply({ content: 'You need to be in a voice channel to play music!', ephemeral: true });
+      if (!voiceChannel) {
+        return interaction.reply('You need to be in a voice channel to play music!');
+      }
+
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: interaction.guild.id,
+        adapterCreator: interaction.guild.voiceAdapterCreator,
+      });
+
+      // Fetch the Spotify track's stream (using a preview URL or similar)
+      const response = await axios.get(trackUrl, { responseType: 'stream' });
+
+      // Ensure the response is a readable stream for discord.js/voice
+      const resource = createAudioResource(response.data);
+
+      player.play(resource);
+      connection.subscribe(player);
+
+      player.on(AudioPlayerStatus.Playing, () => {
+        console.log('The track is now playing!');
+      });
+
+      player.on(AudioPlayerStatus.Idle, () => {
+        connection.destroy(); // Leave the voice channel when the track finishes
+      });
+
+      return interaction.reply('Playing your track!');
+    } catch (error) {
+      console.error('Error playing track:', error);
+      return interaction.reply('There was an error playing the track!');
+    }
   }
 
-  // Join the voice channel
-  const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: interaction.guild.id,
-    adapterCreator: interaction.guild.voiceAdapterCreator,
-  });
-
-  const audioPlayer = createAudioPlayer();
-  const resource = createAudioResource(trackUrl);
-
-  audioPlayer.play(resource);
-  connection.subscribe(audioPlayer);
-
-  audioPlayer.on(AudioPlayerStatus.Idle, () => {
-    connection.destroy();
-  });
-
-  return interaction.reply({ content: '🎶 Now playing your Spotify track!' });
+  return { playSpotifyTrack };
 }
 
-async function searchSpotifyTrack(query) {
-  try {
-    const result = await spotifyApi.searchTracks(query);
-    return result.body.tracks.items[0];
-  } catch (error) {
-    console.error('Error searching Spotify track:', error);
-    return null;
-  }
-}
-
-module.exports = {
-  initializePlayer,
-  searchSpotifyTrack,
-  playSpotifyTrack,
-};
+module.exports = { initializePlayer };
