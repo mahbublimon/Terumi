@@ -12,11 +12,11 @@ const { initializePlayer } = require('./src/utils/musicPlayer'); // Import the m
 
 // Create a new Discord client instance
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
 // Initialize commands collection
-client.commands = new Collection();
+client.commands = new Collection(); // Ensure the commands collection is initialized properly
 
 // Initialize Express App for Dashboard
 const app = express();
