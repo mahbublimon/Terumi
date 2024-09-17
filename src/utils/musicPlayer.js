@@ -1,50 +1,52 @@
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const axios = require('axios');
+const { createAudioPlayer, joinVoiceChannel, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 
-// Function to initialize the player
-function initializePlayer(client) {
-  const player = createAudioPlayer();
-
-  // Play Spotify track
-  async function playSpotifyTrack(interaction, trackUrl) {
-    try {
-      const voiceChannel = interaction.member.voice.channel;
-
-      if (!voiceChannel) {
-        return interaction.reply('You need to be in a voice channel to play music!');
-      }
-
-      const connection = joinVoiceChannel({
-        channelId: voiceChannel.id,
-        guildId: interaction.guild.id,
-        adapterCreator: interaction.guild.voiceAdapterCreator,
-      });
-
-      // Fetch the Spotify track's stream (using a preview URL or similar)
-      const response = await axios.get(trackUrl, { responseType: 'stream' });
-
-      // Ensure the response is a readable stream for discord.js/voice
-      const resource = createAudioResource(response.data);
-
-      player.play(resource);
-      connection.subscribe(player);
-
-      player.on(AudioPlayerStatus.Playing, () => {
-        console.log('The track is now playing!');
-      });
-
-      player.on(AudioPlayerStatus.Idle, () => {
-        connection.destroy(); // Leave the voice channel when the track finishes
-      });
-
-      return interaction.reply('Playing your track!');
-    } catch (error) {
-      console.error('Error playing track:', error);
-      return interaction.reply('There was an error playing the track!');
-    }
+// Search Spotify for a track
+async function searchSpotifyTrack(query) {
+  try {
+    // Make a request to Spotify's API to search for the track
+    const result = await axios.get(`https://api.spotify.com/v1/search`, {
+      headers: { Authorization: `Bearer ${process.env.SPOTIFY_TOKEN}` },
+      params: { q: query, type: 'track', limit: 1 }
+    });
+    const track = result.data.tracks.items[0];
+    return track || null;
+  } catch (error) {
+    console.error('Error fetching track from Spotify:', error);
+    return null;
   }
-
-  return { playSpotifyTrack };
 }
 
-module.exports = { initializePlayer };
+// Play the track in a voice channel
+async function playSpotifyTrack(interaction, trackUrl) {
+  const voiceChannel = interaction.member.voice.channel;
+  if (!voiceChannel) {
+    throw new Error('You must be in a voice channel to play music.');
+  }
+
+  const connection = joinVoiceChannel({
+    channelId: voiceChannel.id,
+    guildId: interaction.guild.id,
+    adapterCreator: interaction.guild.voiceAdapterCreator,
+  });
+
+  const player = createAudioPlayer();
+
+  // Stream the track from Spotify (using a preview URL for example)
+  const resource = createAudioResource(trackUrl);
+  player.play(resource);
+  connection.subscribe(player);
+
+  player.on(AudioPlayerStatus.Playing, () => {
+    console.log('The track is now playing!');
+  });
+
+  player.on(AudioPlayerStatus.Idle, () => {
+    connection.destroy(); // Disconnect when the track ends
+  });
+}
+
+module.exports = {
+  searchSpotifyTrack,
+  playSpotifyTrack
+};
