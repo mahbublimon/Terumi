@@ -1,26 +1,19 @@
 const { createAudioPlayer, joinVoiceChannel, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const spotifyApi = require('./spotifyClient'); // Spotify API client should be initialized here
 
-// Function to search for a Spotify track
-async function searchSpotifyTrack(query) {
-  try {
-    const result = await spotifyApi.searchTracks(query, { limit: 1 });
-    const track = result.body.tracks.items[0];
-    return track || null;
-  } catch (error) {
-    console.error('Error fetching track from Spotify:', error);
-    return null;
-  }
-}
-
-// Function to play the Spotify track (using preview URL)
-async function playSpotifyTrack(interaction, track) {
+// Play the track in a voice channel
+async function playSpotifyTrack(interaction, trackUrl) {
   const voiceChannel = interaction.member.voice.channel;
 
+  // Check if the user is in a voice channel
   if (!voiceChannel) {
-    return interaction.reply('You need to be in a voice channel to play music!');
+    if (!interaction.replied) {
+      return interaction.reply('You must be in a voice channel to play music.');
+    }
+    return;
   }
 
+  // Join the voice channel
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
     guildId: interaction.guild.id,
@@ -29,49 +22,46 @@ async function playSpotifyTrack(interaction, track) {
 
   const player = createAudioPlayer();
 
-  // Use the Spotify track's preview URL
-  if (!track.preview_url) {
-    return interaction.reply('Sorry, this track does not have a preview URL available.');
-  }
-
-  const resource = createAudioResource(track.preview_url); // Play the preview URL
+  // Create an audio resource for the Spotify track
+  const resource = createAudioResource(trackUrl);
   player.play(resource);
   connection.subscribe(player);
 
+  // Reply to the interaction only once
+  try {
+    if (!interaction.replied) {
+      await interaction.reply({ content: `Playing track: ${trackUrl}` });
+    }
+  } catch (err) {
+    console.error('Error replying to interaction:', err.message);
+  }
+
+  // Event listener when the track starts playing
   player.on(AudioPlayerStatus.Playing, () => {
-    console.log(`Now playing: ${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`);
-    interaction.reply(`Now playing: **${track.name}** by ${track.artists.map(artist => artist.name).join(', ')}`);
+    console.log('The track is now playing!');
   });
 
+  // Event listener when the track finishes or goes idle
   player.on(AudioPlayerStatus.Idle, () => {
-    connection.destroy(); // Disconnect when the track finishes
-    console.log('Finished playing, disconnected from the voice channel.');
+    connection.destroy(); // Disconnect from the voice channel
+    console.log('Track finished playing, connection destroyed.');
   });
 
-  player.on('error', (error) => {
-    console.error('Error playing audio:', error);
-    interaction.reply('There was an error playing the track.');
-    connection.destroy();
-  });
-}
+  // Error handling to avoid multiple replies
+  player.on('error', async (error) => {
+    console.error('Error playing the track:', error);
 
-// Initialize the music player with the Discord client
-function initializePlayer(client) {
-  client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-
-    if (interaction.commandName === 'play') {
-      const query = interaction.options.getString('query');
-      const track = await searchSpotifyTrack(query);
-
-      if (!track) {
-        return interaction.reply(`No results found for "${query}".`);
+    // Reply with an error message only if no reply has been sent yet
+    if (!interaction.replied) {
+      try {
+        await interaction.reply({ content: 'There was an error playing the track!', ephemeral: true });
+      } catch (replyError) {
+        console.error('Error sending error reply:', replyError.message);
       }
-
-      await playSpotifyTrack(interaction, track);
     }
   });
 }
 
-// Export the function to initialize the player
-module.exports = { initializePlayer, searchSpotifyTrack, playSpotifyTrack };
+module.exports = {
+  playSpotifyTrack,
+};
