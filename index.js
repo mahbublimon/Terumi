@@ -9,8 +9,6 @@ const fs = require('fs'); // Import the file system module
 const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 const session = require('express-session'); // For session management
 const { initializePlayer } = require('./src/utils/musicPlayer'); // Import the music player module
-
-// Create a new Discord client instance
 const { client } = require('./bot'); // Use the client exported from bot.js
 
 // Initialize Express App for Dashboard
@@ -122,7 +120,7 @@ app.get('/auth/logout', (req, res) => {
 connectDB();
 
 // Initialize the music player with the Discord client
-initializePlayer(client); // Correctly initialize the music player
+initializePlayer(client); // Initialize the music player here
 
 // Bot ready event
 client.once('ready', async () => {
@@ -137,6 +135,7 @@ function setPresence() {
     client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
   } else {
     client.user.setActivity('Starting up...', { type: 'PLAYING' });
+  }
 }
 
 // Register Slash Commands globally or for specific guilds
@@ -167,11 +166,13 @@ async function registerSlashCommands() {
     console.log('Started refreshing application (/) commands.');
 
     if (process.env.GUILD_ID) {
+      // If a GUILD_ID is provided, register commands for a specific guild
       await rest.put(
         Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID),
         { body: commands },
       );
     } else {
+      // Register commands globally
       await rest.put(
         Routes.applicationCommands(client.user.id),
         { body: commands },
