@@ -1,52 +1,41 @@
-const axios = require('axios');
 const { createAudioPlayer, joinVoiceChannel, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
+const spotifyApi = require('./spotifyApi'); // Assuming Spotify API is initialized in another module
 
-// Search Spotify for a track
-async function searchSpotifyTrack(query) {
-  try {
-    // Make a request to Spotify's API to search for the track
-    const result = await axios.get(`https://api.spotify.com/v1/search`, {
-      headers: { Authorization: `Bearer ${process.env.SPOTIFY_TOKEN}` },
-      params: { q: query, type: 'track', limit: 1 }
-    });
-    const track = result.data.tracks.items[0];
-    return track || null;
-  } catch (error) {
-    console.error('Error fetching track from Spotify:', error);
-    return null;
-  }
-}
+// Initialize the music player with the Discord client
+function initializePlayer(client) {
+  client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
 
-// Play the track in a voice channel
-async function playSpotifyTrack(interaction, trackUrl) {
-  const voiceChannel = interaction.member.voice.channel;
-  if (!voiceChannel) {
-    throw new Error('You must be in a voice channel to play music.');
-  }
+    // Example of handling a 'play' command
+    if (interaction.commandName === 'play') {
+      const voiceChannel = interaction.member.voice.channel;
 
-  const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: interaction.guild.id,
-    adapterCreator: interaction.guild.voiceAdapterCreator,
-  });
+      if (!voiceChannel) {
+        return interaction.reply('You need to be in a voice channel to play music!');
+      }
 
-  const player = createAudioPlayer();
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: interaction.guild.id,
+        adapterCreator: interaction.guild.voiceAdapterCreator,
+      });
 
-  // Stream the track from Spotify (using a preview URL for example)
-  const resource = createAudioResource(trackUrl);
-  player.play(resource);
-  connection.subscribe(player);
+      const player = createAudioPlayer();
+      const resource = createAudioResource('path/to/audio/file.mp3'); // Placeholder for the Spotify audio resource
+      player.play(resource);
+      connection.subscribe(player);
 
-  player.on(AudioPlayerStatus.Playing, () => {
-    console.log('The track is now playing!');
-  });
+      player.on(AudioPlayerStatus.Playing, () => {
+        console.log('The audio is now playing!');
+      });
 
-  player.on(AudioPlayerStatus.Idle, () => {
-    connection.destroy(); // Disconnect when the track ends
+      player.on(AudioPlayerStatus.Idle, () => {
+        connection.destroy();
+        console.log('Audio has finished playing, connection closed.');
+      });
+    }
   });
 }
 
-module.exports = {
-  searchSpotifyTrack,
-  playSpotifyTrack
-};
+// Export the function to initialize the player
+module.exports = { initializePlayer };
