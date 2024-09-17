@@ -5,18 +5,12 @@ const { Routes } = require('discord-api-types/v9');
 const connectDB = require('./database'); // Import the database connection function
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 const session = require('express-session'); // For session management
 const { initializePlayer } = require('./src/utils/musicPlayer'); // Import the music player module
 
 // Create a new Discord client instance
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
-});
-
-// Initialize commands collection
-client.commands = new Collection(); // Ensure the commands collection is initialized properly
+const { client } = require('./bot'); // Use the client exported from bot.js
 
 // Initialize Express App for Dashboard
 const app = express();
@@ -138,7 +132,6 @@ client.once('ready', async () => {
 
 // Set bot presence (status message)
 function setPresence() {
-  // Check if the bot is in any guilds
   if (client.guilds.cache.size > 0) {
     client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
   } else {
