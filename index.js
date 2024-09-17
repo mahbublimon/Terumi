@@ -122,7 +122,7 @@ app.get('/auth/logout', (req, res) => {
 connectDB();
 
 // Initialize the music player with the Discord client
-initializePlayer(client); // Initialize the music player here
+initializePlayer(client); // Correctly initialize the music player
 
 // Bot ready event
 client.once('ready', async () => {
@@ -137,7 +137,6 @@ function setPresence() {
     client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
   } else {
     client.user.setActivity('Starting up...', { type: 'PLAYING' });
-  }
 }
 
 // Register Slash Commands globally or for specific guilds
@@ -168,13 +167,11 @@ async function registerSlashCommands() {
     console.log('Started refreshing application (/) commands.');
 
     if (process.env.GUILD_ID) {
-      // If a GUILD_ID is provided, register commands for a specific guild
       await rest.put(
         Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID),
         { body: commands },
       );
     } else {
-      // Register commands globally
       await rest.put(
         Routes.applicationCommands(client.user.id),
         { body: commands },
