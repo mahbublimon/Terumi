@@ -5,6 +5,7 @@ const { Routes } = require('discord-api-types/v9');
 const connectDB = require('./database'); // Import the database connection function
 const express = require('express');
 const path = require('path');
+const fs = require('fs'); // Import the file system module
 const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 const session = require('express-session'); // For session management
 const { initializePlayer } = require('./src/utils/musicPlayer'); // Import the music player module
