@@ -1,61 +1,59 @@
-const { Player } = require('discord-player');
-const { EmbedBuilder } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const spotifyApi = require('./spotifyClient'); // Import the Spotify API client
+const { EmbedBuilder } = require('discord.js');
+const spotifyApi = require('./spotifyClient'); // Import Spotify client
 
-module.exports = (client) => {
-    // Initialize the Discord player
-    const player = new Player(client, {
-        ytdlOptions: {
-            quality: 'highestaudio',
-            highWaterMark: 1 << 25
-        }
-    });
+const musicPlayer = {};
 
-    // Function to search for a track on Spotify
-    async function searchSpotifyTrack(query) {
-        try {
-            const result = await spotifyApi.searchTracks(query);
-            const track = result.body.tracks.items[0]; // Get the first track result
-            return track || null;
-        } catch (error) {
-            console.error('Error fetching track from Spotify:', error);
-            return null;
-        }
-    }
-
-    // Function to play a Spotify track in a voice channel
-    async function playSpotifyTrack(interaction, trackInfo) {
-        const voiceChannel = interaction.member.voice.channel;
-
-        if (!voiceChannel) {
-            return interaction.reply({ content: 'You need to be in a voice channel to play music!', ephemeral: true });
-        }
-
-        // Join the voice channel
-        const connection = joinVoiceChannel({
-            channelId: voiceChannel.id,
-            guildId: interaction.guild.id,
-            adapterCreator: interaction.guild.voiceAdapterCreator,
-        });
-
-        const audioPlayer = createAudioPlayer();
-        const resource = createAudioResource(trackInfo.preview_url); // Spotify preview URL
-        audioPlayer.play(resource);
-        connection.subscribe(audioPlayer);
-
-        audioPlayer.on(AudioPlayerStatus.Idle, () => {
-            connection.destroy();
-        });
-
-        const embed = new EmbedBuilder()
-            .setTitle('🎶 Now Playing')
-            .setDescription(`**[${trackInfo.name}](${trackInfo.external_urls.spotify})** by ${trackInfo.artists.map(artist => artist.name).join(', ')}`)
-            .setThumbnail(trackInfo.album.images[0].url)
-            .setColor('#1DB954'); // Spotify green color
-
-        await interaction.reply({ embeds: [embed] });
-    }
-
-    return { searchSpotifyTrack, playSpotifyTrack, player }; // Export the necessary functions
+// Function to search a track on Spotify
+musicPlayer.searchSpotifyTrack = async (query) => {
+  try {
+    const result = await spotifyApi.searchTracks(query);
+    const track = result.body.tracks.items[0];
+    return track || null;
+  } catch (error) {
+    console.error('Error fetching track from Spotify:', error);
+    return null;
+  }
 };
+
+// Function to play a Spotify track in a voice channel
+musicPlayer.playTrack = async (interaction, trackUrl, trackInfo) => {
+  const voiceChannel = interaction.member.voice.channel;
+
+  if (!voiceChannel) {
+    return interaction.reply({ content: 'You need to be in a voice channel to play music!', ephemeral: true });
+  }
+
+  // Join the voice channel
+  const connection = joinVoiceChannel({
+    channelId: voiceChannel.id,
+    guildId: interaction.guild.id,
+    adapterCreator: interaction.guild.voiceAdapterCreator,
+  });
+
+  // Create the audio player
+  const audioPlayer = createAudioPlayer();
+  
+  // Assume we have a way to convert Spotify track to playable URL, such as from a third-party service
+  const resource = createAudioResource(trackUrl); // Replace this with a working stream URL
+  
+  // Play the audio resource
+  audioPlayer.play(resource);
+  connection.subscribe(audioPlayer);
+
+  // Set up an event listener for when the audio player finishes
+  audioPlayer.on(AudioPlayerStatus.Idle, () => {
+    connection.destroy(); // Leave the voice channel when the song finishes
+  });
+
+  // Send "Now Playing" embed
+  const embed = new EmbedBuilder()
+    .setColor('#1DB954')
+    .setTitle('🎶 Now Playing')
+    .setDescription(`[${trackInfo.name}](${trackInfo.external_urls.spotify}) by ${trackInfo.artists.map(artist => artist.name).join(', ')}`)
+    .setThumbnail(trackInfo.album.images[0].url);
+
+  await interaction.reply({ embeds: [embed] });
+};
+
+module.exports = musicPlayer;
