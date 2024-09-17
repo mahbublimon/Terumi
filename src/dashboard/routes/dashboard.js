@@ -1,17 +1,18 @@
-const express = require('express'); // Import express once
+// Ensure express is only imported once
+const express = require('express'); 
 const router = express.Router();
-const { client } = require('../../../bot'); // Access bot client
+const { client } = require('../../../bot'); // Import bot client from the correct path
 
-// Track messages per minute
+// Initialize message tracking for messages per minute
 let messageCount = 0;
 let messagesPerMinute = 0;
 
-// Listen for messages and increment count
+// Track message creation events
 client.on('messageCreate', () => {
   messageCount++;
 });
 
-// Reset message count every minute
+// Reset message count every minute and calculate messages per minute
 setInterval(() => {
   messagesPerMinute = messageCount;
   messageCount = 0;
@@ -19,7 +20,7 @@ setInterval(() => {
 
 // API endpoint for bot statistics
 router.get('/stats', (req, res) => {
-  const uptime = client.uptime / 1000; // Convert to seconds
+  const uptimeInSeconds = Math.floor(client.uptime / 1000); // Convert milliseconds to seconds
   const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
   const cachedUsers = client.users.cache.size;
   const totalChannels = client.channels.cache.size;
@@ -31,7 +32,7 @@ router.get('/stats', (req, res) => {
     cachedUsers: cachedUsers,
     channels: totalChannels,
     messagesPerMinute: messagesPerMinute,
-    uptime: uptime // This is in seconds
+    uptime: uptimeInSeconds // Send uptime in seconds
   });
 });
 
