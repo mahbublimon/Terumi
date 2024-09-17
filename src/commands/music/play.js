@@ -13,6 +13,8 @@ module.exports = {
   
   async execute(interaction) {
     const query = interaction.options.getString('query');
+
+    // Search for the track using the query
     const track = await searchSpotifyTrack(query);
 
     if (!track) {
@@ -20,7 +22,11 @@ module.exports = {
     }
 
     try {
-      await playSpotifyTrack(interaction, track);
+      // Play the track in the voice channel
+      await playSpotifyTrack(interaction, track.preview_url || track.external_urls.spotify);
+
+      // Send a reply to let the user know the track is playing
+      await interaction.reply({ content: `Now playing: **${track.name}** by ${track.artists.map(artist => artist.name).join(', ')}` });
     } catch (error) {
       console.error('Error playing track:', error);
       interaction.reply({ content: 'There was an error playing the track!', ephemeral: true });
