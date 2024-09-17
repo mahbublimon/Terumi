@@ -1,5 +1,5 @@
 require('dotenv').config(); // Load environment variables
-const { client } = require('./bot'); // Import client from bot.js
+const { Client, GatewayIntentBits, Collection } = require('discord.js'); // Import necessary Discord.js classes
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const connectDB = require('./database'); // Import the database connection function
@@ -8,9 +8,12 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 const session = require('express-session'); // For session management
+const { initializePlayer } = require('./src/utils/musicPlayer'); // Import the music player module
 
-// Import the musicPlayer module
-const { initializePlayer } = require('./src/utils/musicPlayer');
+// Create a new Discord client instance
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+});
 
 // Initialize Express App for Dashboard
 const app = express();
