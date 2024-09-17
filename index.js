@@ -15,6 +15,9 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 });
 
+// Initialize commands collection
+client.commands = new Collection();
+
 // Initialize Express App for Dashboard
 const app = express();
 const PORT = process.env.PORT || 3000; // Set dynamic port based on environment
@@ -135,7 +138,12 @@ client.once('ready', async () => {
 
 // Set bot presence (status message)
 function setPresence() {
-  client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
+  // Check if the bot is in any guilds
+  if (client.guilds.cache.size > 0) {
+    client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
+  } else {
+    client.user.setActivity('Starting up...', { type: 'PLAYING' });
+  }
 }
 
 // Register Slash Commands globally or for specific guilds
@@ -151,7 +159,7 @@ async function registerSlashCommands() {
 
       // Ensure the command uses SlashCommandBuilder
       if (command.data && typeof command.data.toJSON === 'function' && command.execute) {
-        client.commands.set(command.data.name, command);
+        client.commands.set(command.data.name, command); // Ensure commands are set into the collection
         commands.push(command.data.toJSON()); // Prepare for registration
         console.log(`Registered command: ${command.data.name}`);
       } else {
