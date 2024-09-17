@@ -1,32 +1,35 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { searchSpotifyTrack, playSpotifyTrack } = require('../../utils/musicPlayer')(require('../../../bot')); // Import from musicPlayer.js
+const musicPlayer = require('../../utils/musicPlayer'); // Import musicPlayer utility
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('play')
-        .setDescription('Play a song from Spotify')
-        .addStringOption(option =>
-            option.setName('query')
-                .setDescription('The name of the song or artist')
-                .setRequired(true)
-        ),
+  data: new SlashCommandBuilder()
+    .setName('play')
+    .setDescription('Play a song from Spotify')
+    .addStringOption(option =>
+      option.setName('query')
+        .setDescription('The name of the song or artist to play')
+        .setRequired(true)
+    ),
 
-    async execute(interaction) {
-        const query = interaction.options.getString('query');
+  async execute(interaction) {
+    const query = interaction.options.getString('query');
+    
+    // Search for the track on Spotify
+    const track = await musicPlayer.searchSpotifyTrack(query);
 
-        try {
-            // Search for the track on Spotify
-            const trackInfo = await searchSpotifyTrack(query);
-
-            if (!trackInfo) {
-                return interaction.reply({ content: 'No results found on Spotify for your query!', ephemeral: true });
-            }
-
-            // Play the track in the user's voice channel
-            await playSpotifyTrack(interaction, trackInfo);
-        } catch (error) {
-            console.error('Error playing music:', error);
-            await interaction.reply({ content: 'An error occurred while trying to play the music.', ephemeral: true });
-        }
+    if (!track) {
+      return interaction.reply({ content: `No results found for "${query}".`, ephemeral: true });
     }
+
+    // For simplicity, we assume that the Spotify track URL can be used as the stream URL
+    const trackUrl = track.external_urls.spotify;
+
+    // Play the track in the voice channel
+    try {
+      await musicPlayer.playTrack(interaction, trackUrl, track);
+    } catch (error) {
+      console.error('Error playing music:', error);
+      return interaction.reply({ content: 'There was an error playing the music.', ephemeral: true });
+    }
+  },
 };
