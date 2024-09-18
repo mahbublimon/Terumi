@@ -12,14 +12,26 @@ async function playSpotifyTrack(interaction, trackUrl) {
   });
 
   const player = createAudioPlayer();
-  const resource = createAudioResource(trackUrl); // Track URL from Spotify (e.g., preview URL)
-  
+  const resource = createAudioResource(trackUrl);
+
   player.play(resource);
   connection.subscribe(player);
 
-  // Listen for player events to manage state
+  // Reply to interaction
+  try {
+    await interaction.reply(`Playing track: ${trackUrl}`);
+  } catch (err) {
+    console.error('Error replying to interaction:', err.message);
+  }
+
+  // Ensure the player doesn't disconnect immediately
+  player.on(AudioPlayerStatus.Playing, () => {
+    console.log('The track is now playing!');
+  });
+
   player.on(AudioPlayerStatus.Idle, () => {
-    connection.destroy(); // Disconnect when the track ends
+    console.log('Finished playing, disconnecting...');
+    connection.destroy(); // Disconnect after the track finishes
   });
 
   player.on('error', error => {
