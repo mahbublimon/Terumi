@@ -1,34 +1,42 @@
-  const player = createAudioPlayer();
-  const resource = createAudioResource(trackUrl);
-  const resource = createAudioResource(trackUrl); // Track URL from Spotify (e.g., preview URL)
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
+const playDl = require('play-dl');
 
-  player.play(resource);
-  connection.subscribe(player);
+// Play a Spotify or YouTube track in a voice channel
+async function playSpotifyTrack(interaction, query) {
+  const voiceChannel = interaction.member.voice.channel;
+  if (!voiceChannel) return interaction.reply('Join a voice channel first!');
+
+  const connection = joinVoiceChannel({
+    channelId: voiceChannel.id,
+    guildId: interaction.guild.id,
+    adapterCreator: interaction.guild.voiceAdapterCreator,
+  });
+
+  const player = createAudioPlayer();
 
   try {
-    await interaction.reply(`Playing track: ${trackUrl}`);
-    await interaction.reply(`Now playing: ${trackUrl}`);
-  } catch (err) {
-    console.error('Error replying to interaction:', err.message);
+    // Use play-dl to search for a track and get a stream
+    const streamInfo = await playDl.stream(query); // Stream from Spotify or YouTube
+    const resource = createAudioResource(streamInfo.stream, {
+      inputType: streamInfo.type, // Correct input type for play-dl stream
+    });
+
+    player.play(resource);
+    connection.subscribe(player);
+
+    player.on(AudioPlayerStatus.Playing, () => {
+      console.log('The track is now playing!');
+    });
+
+    player.on(AudioPlayerStatus.Idle, () => {
+      connection.destroy(); // Leave voice channel when track ends
+    });
+
+    await interaction.reply(`Now playing: ${query}`);
+  } catch (error) {
+    console.error('Error playing track:', error);
+    await interaction.reply('Error playing the track.');
   }
-
-  // Ensure the player doesn't disconnect immediately
-  player.on(AudioPlayerStatus.Playing, () => {
-    console.log('The track is now playing!');
-  });
-
-  player.on(AudioPlayerStatus.Idle, () => {
-    console.log('Finished playing, disconnecting...');
-    connection.destroy(); // Disconnect after the track finishes
-    connection.destroy(); // Leave when done
-  });
-
-  player.on('error', error => {
-    console.error('Error playing the track:', error);
-    connection.destroy(); // Ensure we leave the channel on error
-    connection.destroy(); // Disconnect on error
-    if (!interaction.replied) {
-      interaction.reply({ content: 'There was an error playing the track!', ephemeral: true });
-    }
-  });
 }
+
+module.exports = { playSpotifyTrack };
