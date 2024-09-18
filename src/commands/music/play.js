@@ -5,27 +5,36 @@ const { playSpotifyTrack } = require('../../utils/musicPlayer');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('play')
-    .setDescription('Play a song from Spotify')
+    .setDescription('Play a song from Spotify or YouTube')
     .addStringOption(option => 
-      option.setName('query').setDescription('Song title or Spotify URL').setRequired(true)),
-  
+      option.setName('query')
+        .setDescription('Song title or Spotify/YouTube URL')
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const query = interaction.options.getString('query');
-    const track = await searchSpotifyTrack(query);
-
-    if (!track) {
-      return interaction.reply({ content: `No results found for "${query}"!`, ephemeral: true });
-    }
 
     try {
-      // Remove the second interaction.reply() call to avoid multiple replies
-      await playSpotifyTrack(interaction, track.preview_url);
-    } catch (error) {
-      console.error(error);
-      // Only reply with an error if the interaction hasn't been replied to yet
-      if (!interaction.replied) {
-        interaction.reply({ content: 'Error playing the track.', ephemeral: true });
+      // Search for the track
+      console.log(`Searching for the track: ${query}`);
+      const track = await searchSpotifyTrack(query);
+
+      if (!track) {
+        console.log(`No results found for: ${query}`);
+        return interaction.reply(`No results found for "${query}"!`);
       }
+
+      // Play the track in the voice channel
+      console.log(`Attempting to play track: ${track.name}`);
+      await playSpotifyTrack(interaction, track.preview_url || track.external_urls.spotify);
+
+      // Notify the user
+      console.log(`Now playing: ${track.name} by ${track.artists.map(a => a.name).join(', ')}`);
+      await interaction.reply(`Now playing: **${track.name}** by ${track.artists.map(a => a.name).join(', ')}`);
+    } catch (error) {
+      console.error('Error playing track:', error);
+      await interaction.reply('Error playing the track.');
     }
   },
 };
