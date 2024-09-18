@@ -16,11 +16,10 @@ async function playFullSong(interaction, trackUrl) {
   const player = createAudioPlayer();
 
   try {
-    // Create the stream with error handling
     const stream = ytdl(trackUrl, {
-      filter: 'audioonly', // Ensure it's only the audio
-      quality: 'highestaudio', // Ensure it's the highest quality available
-      highWaterMark: 1 << 25, // Increase buffer size if needed
+      filter: 'audioonly',
+      quality: 'highestaudio',
+      highWaterMark: 1 << 25, // Larger buffer for slow streams
     });
 
     const resource = createAudioResource(stream);
@@ -35,6 +34,11 @@ async function playFullSong(interaction, trackUrl) {
     player.on(AudioPlayerStatus.Idle, () => {
       connection.destroy();
       console.log('Finished playing.');
+    });
+
+    player.on('error', (error) => {
+      console.error('Playback error:', error);
+      connection.destroy();
     });
 
   } catch (error) {
