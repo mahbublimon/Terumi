@@ -8,34 +8,36 @@ module.exports = {
     .setDescription('Play a song from Spotify')
     .addStringOption(option => 
       option.setName('query')
-        .setDescription('Song title or artist name')
+        .setDescription('Song title or Spotify URL')
         .setRequired(true)
     ),
 
   async execute(interaction) {
     const query = interaction.options.getString('query');
-    
-    // Search for the track on Spotify
-    const track = await searchSpotifyTrack(query);
 
-    if (!track) {
-      return interaction.reply(`No results found for "${query}"!`);
-    }
-
-    // Use the preview URL of the Spotify track to play the song
-    const trackUrl = track.preview_url;
-
-    if (!trackUrl) {
-      return interaction.reply(`Sorry, no preview available for **${track.name}**.`);
-    }
-
-    // Play the track in the voice channel
     try {
-      await playSpotifyTrack(interaction, trackUrl);
-      await interaction.reply(`Now playing: **${track.name}** by ${track.artists.map(a => a.name).join(', ')}`);
+      // Defer the reply to allow time for the track search and preparation
+      await interaction.deferReply();
+
+      const track = await searchSpotifyTrack(query);
+      if (!track) {
+        return interaction.editReply(`No results found for "${query}"!`);
+      }
+
+      // Play the track in the voice channel
+      await playSpotifyTrack(interaction, track.preview_url);
+
+      // Edit the deferred reply with the success message
+      await interaction.editReply(`Now playing: **${track.name}** by ${track.artists.map(a => a.name).join(', ')}`);
     } catch (error) {
-      console.error('Error executing play command:', error);
-      interaction.reply('There was an error playing the track.');
+      console.error('Error playing the track:', error);
+
+      // Handle error if the interaction is already replied or deferred
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply('There was an error playing the track.');
+      } else {
+        await interaction.editReply('There was an error playing the track.');
+      }
     }
   },
 };
