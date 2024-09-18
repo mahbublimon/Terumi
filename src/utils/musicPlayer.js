@@ -1,14 +1,14 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const playDl = require('play-dl');
+const axios = require('axios');
 
-// Play a Spotify or YouTube track in a voice channel
-async function playSpotifyTrack(interaction, query) {
+// Play a Spotify track in a voice channel
+async function playSpotifyTrack(interaction, trackUrl) {
   const voiceChannel = interaction.member.voice.channel;
+
   if (!voiceChannel) {
-    return interaction.reply('Join a voice channel first!');
+    return interaction.reply('You need to join a voice channel first!');
   }
 
-  // Connect to the voice channel
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
     guildId: interaction.guild.id,
@@ -18,27 +18,25 @@ async function playSpotifyTrack(interaction, query) {
   const player = createAudioPlayer();
 
   try {
-    console.log(`Attempting to stream the track: ${query}`);
-    const streamInfo = await playDl.stream(query); // Fetch stream from Spotify or YouTube
-    const resource = createAudioResource(streamInfo.stream, {
-      inputType: streamInfo.type, // Use the correct input type
-    });
+    // Fetch the track preview (direct stream of the preview URL)
+    const response = await axios.get(trackUrl, { responseType: 'stream' });
+    const resource = createAudioResource(response.data);
 
     player.play(resource);
     connection.subscribe(player);
 
-    // Player event listeners
     player.on(AudioPlayerStatus.Playing, () => {
-      console.log('The track is now playing!');
+      console.log('Track is now playing!');
     });
 
     player.on(AudioPlayerStatus.Idle, () => {
-      console.log('Track ended, disconnecting from the channel.');
-      connection.destroy(); // Leave voice channel when the track ends
+      console.log('Track finished, disconnecting...');
+      connection.destroy();
     });
+
   } catch (error) {
-    console.error('Error playing the track:', error.message);
-    await interaction.reply('Error playing the track.');
+    console.error('Error playing the track:', error);
+    interaction.reply('There was an error playing the track.');
   }
 }
 
