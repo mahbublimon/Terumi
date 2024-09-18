@@ -16,9 +16,10 @@ module.exports = {
     const query = interaction.options.getString('query');
 
     try {
-      // Defer the reply to allow time for the track search and preparation
+      // Defer the reply to allow time for searching and preparing the track
       await interaction.deferReply();
 
+      // Search for the track on Spotify
       const track = await searchSpotifyTrack(query);
       if (!track) {
         return interaction.editReply(`No results found for "${query}"!`);
@@ -32,11 +33,11 @@ module.exports = {
     } catch (error) {
       console.error('Error playing the track:', error);
 
-      // Handle error if the interaction is already replied or deferred
-      if (!interaction.replied && !interaction.deferred) {
-        await interaction.reply('There was an error playing the track.');
-      } else {
+      // If the interaction has already been deferred, we use editReply to handle errors
+      if (interaction.deferred) {
         await interaction.editReply('There was an error playing the track.');
+      } else if (!interaction.replied) {
+        await interaction.reply('There was an error playing the track.');
       }
     }
   },
