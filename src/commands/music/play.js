@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js'); // Update to EmbedBuilder
+const { EmbedBuilder } = require('discord.js'); // Use EmbedBuilder
+const { playFullSong } = require('../../utils/musicPlayer');
 const { searchSpotifyTrack } = require('../../utils/spotifyClient');
-const { playTrack } = require('../../utils/musicPlayer');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,7 +11,7 @@ module.exports = {
       option.setName('query')
         .setDescription('Song title or Spotify URL')
         .setRequired(true)),
-
+  
   async execute(interaction) {
     const query = interaction.options.getString('query');
     const track = await searchSpotifyTrack(query);
@@ -21,17 +21,17 @@ module.exports = {
     }
 
     try {
-      await playTrack(interaction, track);
+      await playFullSong(interaction, track);
 
-      const embed = new EmbedBuilder() // Use EmbedBuilder instead of MessageEmbed
+      const embed = new EmbedBuilder()
         .setTitle('Now Playing')
-        .setDescription(`**${track.name}** by ${track.artists.map(a => a.name).join(', ')}`)
+        .setDescription(`**${track.title}**`)
         .setColor('#1DB954'); // Spotify color
 
       await interaction.followUp({ embeds: [embed] });
 
     } catch (error) {
-      console.error('Error executing play command:', error);
+      console.error('Error playing the track:', error);
       await interaction.reply('Error playing the track.');
     }
   },
