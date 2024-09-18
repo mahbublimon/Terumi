@@ -1,47 +1,38 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js'); // Update to EmbedBuilder
 const { searchSpotifyTrack } = require('../../utils/spotifyClient');
-const { playFullSong } = require('../../utils/musicPlayer');
+const { playTrack } = require('../../utils/musicPlayer');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('play')
-    .setDescription('Play a song by searching on Spotify')
-    .addStringOption(option =>
+    .setDescription('Play a song from Spotify or YouTube')
+    .addStringOption(option => 
       option.setName('query')
         .setDescription('Song title or Spotify URL')
         .setRequired(true)),
-  
-  async execute(interaction) {
-    await interaction.deferReply(); // Allow time for searching the track
 
+  async execute(interaction) {
     const query = interaction.options.getString('query');
     const track = await searchSpotifyTrack(query);
 
     if (!track) {
-      return interaction.editReply(`No results found for "${query}".`);
+      return interaction.reply(`No results found for "${query}"!`);
     }
 
     try {
-      // Play the full song
-      await playFullSong(interaction, track);
+      await playTrack(interaction, track);
 
-      // Create an embedded message
-      const embed = new MessageEmbed()
-        .setColor('#1DB954') // Spotify green color
-        .setTitle(`Now Playing: ${track.name}`)
-        .setURL(track.external_urls.spotify) // Spotify track URL
-        .setDescription(`**Artist:** ${track.artists.map(artist => artist.name).join(', ')}\n**Album:** ${track.album.name}`)
-        .setThumbnail(track.album.images[0]?.url || '') // Album cover image
-        .setFooter('Enjoy your music!', 'https://cdn-icons-png.flaticon.com/512/174/174872.png') // Spotify logo in footer
-        .setTimestamp();
+      const embed = new EmbedBuilder() // Use EmbedBuilder instead of MessageEmbed
+        .setTitle('Now Playing')
+        .setDescription(`**${track.name}** by ${track.artists.map(a => a.name).join(', ')}`)
+        .setColor('#1DB954'); // Spotify color
 
-      // Send the embed
-      interaction.editReply({ embeds: [embed] });
+      await interaction.followUp({ embeds: [embed] });
 
     } catch (error) {
-      console.error('Error playing the track:', error);
-      interaction.editReply('There was an error playing the track.');
+      console.error('Error executing play command:', error);
+      await interaction.reply('Error playing the track.');
     }
   },
 };
