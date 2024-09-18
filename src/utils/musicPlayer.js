@@ -1,11 +1,11 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const playDl = require('play-dl'); // YouTube audio streaming with play-dl
+const ytdl = require('ytdl-core');
 
-// Play a full song using YouTube audio
-async function playFullSong(interaction, track) {
+// Play a Spotify track or YouTube video in a voice channel
+async function playTrack(interaction, track) {
   const voiceChannel = interaction.member.voice.channel;
   if (!voiceChannel) {
-    return interaction.reply('You need to be in a voice channel to play music.');
+    return interaction.reply('You need to be in a voice channel to play music!');
   }
 
   const connection = joinVoiceChannel({
@@ -17,40 +17,36 @@ async function playFullSong(interaction, track) {
   const player = createAudioPlayer();
 
   try {
-    // Search for the song on YouTube using play-dl
+    // Use YouTube for full-length song
     const searchQuery = `${track.name} by ${track.artists[0].name}`;
-    const video = await playDl.search(searchQuery, { limit: 1, source: { youtube: 'video' } });
+    
+    // Fetch video info using ytdl-core
+    const videoUrl = `https://www.youtube.com/watch?v=${track.id}`; // Adjust URL to match the YouTube ID you get from search results
+    const stream = ytdl(videoUrl, { filter: 'audioonly' });
 
-    if (video.length === 0) {
-      throw new Error('No audio found for the track.');
-    }
-
-    // Stream the audio from YouTube
-    const stream = await playDl.stream(video[0].url);
-    const resource = createAudioResource(stream.stream, { inputType: stream.type });
+    const resource = createAudioResource(stream);
     player.play(resource);
     connection.subscribe(player);
 
     player.on(AudioPlayerStatus.Playing, () => {
-      console.log('The track is now playing!');
-      interaction.editReply(`Now playing: **${track.name}** by **${track.artists.map(artist => artist.name).join(', ')}**.`);
+      console.log('Track is now playing!');
+      interaction.reply(`Now playing: **${track.name}** by ${track.artists.map(artist => artist.name).join(', ')}`);
     });
 
     player.on(AudioPlayerStatus.Idle, () => {
-      connection.destroy(); // Disconnect when the track finishes
+      connection.destroy(); // Leave when done
       console.log('Finished playing, disconnected from the voice channel.');
     });
 
     player.on('error', error => {
       console.error('Error playing the track:', error);
-      interaction.editReply('There was an error playing the track.');
       connection.destroy();
     });
+
   } catch (error) {
-    console.error('Error:', error);
-    interaction.editReply(`Failed to play the track: ${error.message}`);
-    connection.destroy();
+    console.error('Error while playing the track:', error);
+    await interaction.reply(`Failed to play the track: ${error.message}`);
   }
 }
 
-module.exports = { playFullSong };
+module.exports = { playTrack };
