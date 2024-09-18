@@ -4,8 +4,11 @@ const playDl = require('play-dl');
 // Play a Spotify or YouTube track in a voice channel
 async function playSpotifyTrack(interaction, query) {
   const voiceChannel = interaction.member.voice.channel;
-  if (!voiceChannel) return interaction.reply('Join a voice channel first!');
+  if (!voiceChannel) {
+    return interaction.reply('Join a voice channel first!');
+  }
 
+  // Connect to the voice channel
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
     guildId: interaction.guild.id,
@@ -15,26 +18,26 @@ async function playSpotifyTrack(interaction, query) {
   const player = createAudioPlayer();
 
   try {
-    // Use play-dl to search for a track and get a stream
-    const streamInfo = await playDl.stream(query); // Stream from Spotify or YouTube
+    console.log(`Attempting to stream the track: ${query}`);
+    const streamInfo = await playDl.stream(query); // Fetch stream from Spotify or YouTube
     const resource = createAudioResource(streamInfo.stream, {
-      inputType: streamInfo.type, // Correct input type for play-dl stream
+      inputType: streamInfo.type, // Use the correct input type
     });
 
     player.play(resource);
     connection.subscribe(player);
 
+    // Player event listeners
     player.on(AudioPlayerStatus.Playing, () => {
       console.log('The track is now playing!');
     });
 
     player.on(AudioPlayerStatus.Idle, () => {
-      connection.destroy(); // Leave voice channel when track ends
+      console.log('Track ended, disconnecting from the channel.');
+      connection.destroy(); // Leave voice channel when the track ends
     });
-
-    await interaction.reply(`Now playing: ${query}`);
   } catch (error) {
-    console.error('Error playing track:', error);
+    console.error('Error playing the track:', error.message);
     await interaction.reply('Error playing the track.');
   }
 }
