@@ -1,5 +1,4 @@
-// musicPlayer.js
-const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 
 // Play a Spotify track in a voice channel
 async function playSpotifyTrack(interaction, trackUrl) {
@@ -18,7 +17,15 @@ async function playSpotifyTrack(interaction, trackUrl) {
   player.play(resource);
   connection.subscribe(player);
 
-  player.on('idle', () => connection.destroy()); // Leave when done
+  // Listen for player events to manage state
+  player.on(AudioPlayerStatus.Idle, () => {
+    connection.destroy(); // Disconnect when the track ends
+  });
+
+  player.on('error', error => {
+    console.error('Error playing the track:', error);
+    connection.destroy(); // Ensure we leave the channel on error
+  });
 }
 
 module.exports = { playSpotifyTrack };
