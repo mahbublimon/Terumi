@@ -8,12 +8,29 @@ const spotifyApi = new SpotifyWebApi({
 
 // Refresh token and search functions
 const refreshSpotifyToken = async () => {
-  // Handle Spotify token refresh
+  try {
+    const data = await spotifyApi.clientCredentialsGrant();
+    spotifyApi.setAccessToken(data.body.access_token);
+    console.log('Spotify access token refreshed');
+  } catch (error) {
+    console.error('Error refreshing Spotify token:', error);
+  }
 };
 
+// Search Spotify for a track
 const searchSpotifyTrack = async (query) => {
-  const result = await spotifyApi.searchTracks(query);
-  return result.body.tracks.items[0];
+  try {
+    const result = await spotifyApi.searchTracks(query);
+    const track = result.body.tracks.items[0];
+    return track || null; // Return the track or null if not found
+  } catch (error) {
+    console.error('Error searching Spotify:', error);
+    return null; // Return null on error
+  }
 };
+
+// Refresh token periodically
+setInterval(refreshSpotifyToken, 3600 * 1000); // Every hour
+refreshSpotifyToken(); // Refresh on startup
 
 module.exports = { refreshSpotifyToken, searchSpotifyTrack };
