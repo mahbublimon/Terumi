@@ -1,23 +1,19 @@
 const SpotifyWebApi = require('spotify-web-api-node');
 
-// Create Spotify client
+// Create Spotify API client
 const spotifyApi = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
 });
 
+// Refresh token and search functions
 const refreshSpotifyToken = async () => {
-  try {
-    const data = await spotifyApi.clientCredentialsGrant();
-    spotifyApi.setAccessToken(data.body.access_token);
-    console.log('Spotify access token refreshed');
-  } catch (error) {
-    console.error('Error retrieving Spotify access token:', error);
-  }
+  // Handle Spotify token refresh
 };
 
-// Refresh token every hour
-setInterval(refreshSpotifyToken, 3600 * 1000);
-refreshSpotifyToken();
+const searchSpotifyTrack = async (query) => {
+  const result = await spotifyApi.searchTracks(query);
+  return result.body.tracks.items[0];
+};
 
-module.exports = spotifyApi;
+module.exports = { refreshSpotifyToken, searchSpotifyTrack };
