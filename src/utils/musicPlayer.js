@@ -1,5 +1,4 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const { getAudioUrl } = require('some-streaming-package'); // Ensure you're using a package to stream audio, or implement fetching the preview URL correctly
 
 // Play a Spotify track in a voice channel
 async function playSpotifyTrack(interaction, trackUrl) {
