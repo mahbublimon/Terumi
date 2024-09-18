@@ -5,22 +5,22 @@ const { Routes } = require('discord-api-types/v9');
 const connectDB = require('./database'); // Import the database connection function
 const express = require('express');
 const path = require('path');
-const fs = require('fs'); // Import the file system module
+const fs = require('fs'); // File system module
 const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 const session = require('express-session'); // For session management
-const { initializePlayer } = require('./src/utils/musicPlayer'); // Import the music player module
+const { playSpotifyTrack } = require('./src/utils/musicPlayer'); // Import music player functions (adjust if necessary)
 const { client } = require('./bot'); // Use the client exported from bot.js
 
 // Initialize Express App for Dashboard
 const app = express();
-const PORT = process.env.PORT || 3000; // Set dynamic port based on environment
+const PORT = process.env.PORT || 3000;
 
 // Configure session middleware
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key', // Use env var for secret key
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: process.env.NODE_ENV === 'production' }, // Ensure secure cookies in production
+  cookie: { secure: process.env.NODE_ENV === 'production' },
 }));
 
 // Serve static files for the dashboard (HTML, CSS, JS)
@@ -118,9 +118,6 @@ app.get('/auth/logout', (req, res) => {
 
 // Connect to MongoDB using the `database.js` file
 connectDB();
-
-// Initialize the music player with the Discord client
-initializePlayer(client); // Initialize the music player here
 
 // Bot ready event
 client.once('ready', async () => {
