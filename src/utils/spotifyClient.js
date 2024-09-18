@@ -1,49 +1,37 @@
+// src/utils/spotifyClient.js
 const SpotifyWebApi = require('spotify-web-api-node');
 
-// Create Spotify API client
+// Initialize Spotify API client
 const spotifyApi = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
 });
 
-// Refresh token function
+// Function to refresh Spotify API token
 const refreshSpotifyToken = async () => {
   try {
     const data = await spotifyApi.clientCredentialsGrant();
     spotifyApi.setAccessToken(data.body.access_token);
     console.log('Spotify access token refreshed');
   } catch (error) {
-    console.error('Error refreshing Spotify token:', error.message);
+    console.error('Error refreshing Spotify token:', error);
   }
 };
 
-// Search Spotify for a track
+// Function to search for a track on Spotify
 const searchSpotifyTrack = async (query) => {
   try {
-    // Ensure the token is still valid before searching
-    if (!spotifyApi.getAccessToken()) {
-      console.log('Access token missing, refreshing token...');
-      await refreshSpotifyToken();
-    }
-
-    const result = await spotifyApi.searchTracks(query);
-
-    // Handle no results case
-    if (!result.body.tracks.items.length) {
-      console.log(`No tracks found for query: ${query}`);
-      return null;
-    }
-
-    const track = result.body.tracks.items[0];
-    return track; // Return the first matching track
+    const data = await spotifyApi.searchTracks(query);
+    const track = data.body.tracks.items[0];
+    return track || null;  // Return the first track found or null
   } catch (error) {
-    console.error('Error searching Spotify:', error.message);
-    return null; // Return null on error
+    console.error('Error searching Spotify:', error);
+    return null;
   }
 };
 
-// Refresh token periodically (every hour)
+// Refresh token every hour
 setInterval(refreshSpotifyToken, 3600 * 1000);
-refreshSpotifyToken(); // Refresh the token on startup
+refreshSpotifyToken();
 
-module.exports = { refreshSpotifyToken, searchSpotifyTrack };
+module.exports = { searchSpotifyTrack, refreshSpotifyToken };
