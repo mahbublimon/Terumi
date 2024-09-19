@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
@@ -23,7 +23,26 @@ module.exports = {
     const reason = interaction.options.getString('reason');
     const member = interaction.guild.members.cache.get(user.id);
 
+    // Ban the user with a reason
     await member.ban({ reason });
-    await interaction.reply(`${user.username} has been banned. Reason: ${reason}`);
+
+    // Create an embed message for banning
+    const embed = new EmbedBuilder()
+      .setColor(0xFF0000) // Set color to red for banning
+      .setTitle('User Banned')
+      .setDescription(`${user.username} has been banned from the server.`)
+      .addFields(
+        { name: 'Reason', value: reason, inline: true },
+        { name: 'Banned By', value: interaction.member.user.tag, inline: true }
+      )
+      .setTimestamp();
+
+    // Send the embed message
+    const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+    // Set a timeout to delete the message after 10 seconds
+    setTimeout(() => {
+      interaction.deleteReply().catch(console.error); // Ensure the message is deleted
+    }, 10000); // 10 seconds in milliseconds
   },
 };
