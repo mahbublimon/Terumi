@@ -1,6 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
-const ms = require('ms'); // For time parsing
+const ms = require('ms');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -39,7 +39,21 @@ module.exports = {
     }
 
     await member.roles.add(muteRole);
-    await interaction.reply(`${user.username} has been muted for ${duration}. Reason: ${reason}`);
+
+    const embed = new EmbedBuilder()
+      .setTitle('User Muted')
+      .setColor(0xFF0000)
+      .addFields(
+        { name: 'User', value: `${user.username}`, inline: true },
+        { name: 'Duration', value: duration, inline: true },
+        { name: 'Reason', value: reason, inline: true }
+      );
+
+    const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+    setTimeout(() => {
+      interaction.deleteReply().catch(console.error);
+    }, 10000);
 
     // Unmute after the specified duration
     setTimeout(async () => {
