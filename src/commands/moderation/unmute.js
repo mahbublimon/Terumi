@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
@@ -24,6 +24,16 @@ module.exports = {
     }
 
     await member.roles.remove(muteRole);
-    await interaction.reply(`${user.username} has been unmuted.`);
+
+    const embed = new EmbedBuilder()
+      .setTitle('User Unmuted')
+      .setColor(0x00FF00)
+      .addFields({ name: 'User', value: `${user.username}`, inline: true });
+
+    const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+    setTimeout(() => {
+      interaction.deleteReply().catch(console.error);
+    }, 10000);
   },
 };
