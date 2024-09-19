@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
@@ -18,6 +18,15 @@ module.exports = {
     const channel = interaction.options.getChannel('channel');
     await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { SEND_MESSAGES: false });
 
-    await interaction.reply(`${channel.name} has been locked.`);
+    const embed = new EmbedBuilder()
+      .setTitle('Channel Locked')
+      .setColor(0xFF0000)
+      .addFields({ name: 'Channel', value: `${channel.name}`, inline: true });
+
+    const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+    setTimeout(() => {
+      interaction.deleteReply().catch(console.error);
+    }, 10000);
   },
 };
