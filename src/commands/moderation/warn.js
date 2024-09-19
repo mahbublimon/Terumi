@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const hasModerationPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
@@ -15,7 +15,6 @@ module.exports = {
         .setRequired(true)),
 
   async execute(interaction) {
-    // Check if the member has moderation permissions
     if (!(await hasModerationPermissions(interaction.member))) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
     }
@@ -26,9 +25,20 @@ module.exports = {
     // Send the warning as a DM to the user
     try {
       await user.send(`You have been warned for the following reason: ${reason}`);
-      await interaction.reply(`Warned ${user.username} for: ${reason}`);
+      const embed = new EmbedBuilder()
+        .setTitle('User Warned')
+        .setColor(0xFFAA00)
+        .addFields(
+          { name: 'User', value: `${user.username}`, inline: true },
+          { name: 'Reason', value: reason, inline: true }
+        );
+
+      const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+      setTimeout(() => {
+        interaction.deleteReply().catch(console.error);
+      }, 10000);
     } catch (error) {
-      // Handle cases where the user has DMs disabled
       await interaction.reply(`Failed to send a DM to ${user.username}, but they have been warned for: ${reason}`);
     }
   },
