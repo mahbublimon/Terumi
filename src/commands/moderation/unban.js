@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
@@ -23,6 +23,19 @@ module.exports = {
     const reason = interaction.options.getString('reason');
 
     await interaction.guild.members.unban(userId);
-    await interaction.reply(`User with ID ${userId} has been unbanned. Reason: ${reason}`);
+
+    const embed = new EmbedBuilder()
+      .setTitle('User Unbanned')
+      .setColor(0x00FF00)
+      .addFields(
+        { name: 'User ID', value: userId, inline: true },
+        { name: 'Reason', value: reason, inline: true }
+      );
+
+    const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+    setTimeout(() => {
+      interaction.deleteReply().catch(console.error);
+    }, 10000);
   },
 };
