@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
@@ -24,6 +24,19 @@ module.exports = {
     const member = interaction.guild.members.cache.get(user.id);
 
     await member.kick(reason);
-    await interaction.reply(`${user.username} has been kicked. Reason: ${reason}`);
+
+    const embed = new EmbedBuilder()
+      .setTitle('User Kicked')
+      .setColor(0xFF0000)
+      .addFields(
+        { name: 'User', value: `${user.username}`, inline: true },
+        { name: 'Reason', value: reason, inline: true }
+      );
+
+    const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+    setTimeout(() => {
+      interaction.deleteReply().catch(console.error);
+    }, 10000);
   },
 };
