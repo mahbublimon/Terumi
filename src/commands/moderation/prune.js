@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
@@ -22,6 +22,16 @@ module.exports = {
     }
 
     const messages = await interaction.channel.bulkDelete(amount, true);
-    await interaction.reply(`Successfully deleted ${messages.size} messages.`);
+
+    const embed = new EmbedBuilder()
+      .setTitle('Messages Pruned')
+      .setColor(0x00FF00)
+      .addFields({ name: 'Messages Deleted', value: `${messages.size}`, inline: true });
+
+    const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+    setTimeout(() => {
+      interaction.deleteReply().catch(console.error);
+    }, 10000);
   },
 };
