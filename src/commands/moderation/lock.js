@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
@@ -16,17 +16,12 @@ module.exports = {
     }
 
     const channel = interaction.options.getChannel('channel');
-    await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { SEND_MESSAGES: false });
 
-    const embed = new EmbedBuilder()
-      .setTitle('Channel Locked')
-      .setColor(0xFF0000)
-      .addFields({ name: 'Channel', value: `${channel.name}`, inline: true });
+    // Use PermissionsBitField.Flags instead of just 'SEND_MESSAGES'
+    await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, {
+      [PermissionsBitField.Flags.SendMessages]: false,
+    });
 
-    const replyMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
-
-    setTimeout(() => {
-      interaction.deleteReply().catch(console.error);
-    }, 10000);
+    await interaction.reply(`${channel.name} has been locked.`);
   },
 };
