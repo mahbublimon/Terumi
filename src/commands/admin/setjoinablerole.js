@@ -19,8 +19,8 @@ module.exports = {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
     }
 
-    // Set the role as joinable
-    setJoinableRole(interaction.guild, role);
+    // Set the role as joinable in the database
+    await setJoinableRole(interaction.guild, role);
     await interaction.reply(`The role **${role.name}** is now joinable.`);
   },
 };
