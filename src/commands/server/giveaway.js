@@ -45,7 +45,6 @@ module.exports = {
       return interaction.reply({ content: 'Invalid duration format. Please use a format like `3d`, `2h`, or `30m`.', ephemeral: true });
     }
 
-    // Initial embed with 0 entries
     const embed = new EmbedBuilder()
       .setColor(Colors.Gold) // Use predefined color constant
       .setTitle(`🎉 **${title}** 🎉`) // Custom title from user input
@@ -53,50 +52,18 @@ module.exports = {
         `**Prize**: ${prize}\n` +
         `**Number of Winners**: ${winners}\n` +
         `**Duration**: ${duration}\n` +
-        `**Entries**: 0\n` +  // Initial entries count set to 0
+        `**Entries**: ${entryCount}\n` +  // Initial entries count set to 0
         `**Hosted by**: ${host}`
       )
       .setFooter({ text: 'React with 🎉 to enter!' })
       .setTimestamp(Date.now() + durationMs); // Show the time when the giveaway ends
 
-    // Send the giveaway message and add reaction
+    // Send the giveaway message
     const giveawayMessage = await channel.send({ embeds: [embed] });
     giveawayMessage.react('🎉'); // React with 🎉 emoji
 
-    // Track users who react to the giveaway
-    const filter = (reaction, user) => {
-      return reaction.emoji.name === '🎉' && !user.bot; // Only count real users
-    };
-
-    const collector = giveawayMessage.createReactionCollector({ filter, time: durationMs });
-
-    // Update the embed with the new entries count dynamically
-    collector.on('collect', async () => {
-      const reaction = giveawayMessage.reactions.cache.get('🎉');
-      const users = await reaction.users.fetch();
-      const eligibleUsers = users.filter(user => !user.bot); // Filter out bots
-      const entryCount = eligibleUsers.size;
-
-      // Edit the message to update the entries count
-      const updatedEmbed = new EmbedBuilder()
-        .setColor(Colors.Gold)
-        .setTitle(`🎉 **${title}** 🎉`)
-        .setDescription(
-          `**Prize**: ${prize}\n` +
-          `**Number of Winners**: ${winners}\n` +
-          `**Duration**: ${duration}\n` +
-          `**Entries**: ${entryCount}\n` +  // Update the entries count
-          `**Hosted by**: ${host}`
-        )
-        .setFooter({ text: 'React with 🎉 to enter!' })
-        .setTimestamp(Date.now() + durationMs); // Keep the original timestamp
-
-      // Edit the original message with the new embed
-      giveawayMessage.edit({ embeds: [updatedEmbed] });
-    });
-
-    // After the giveaway ends, pick the winners
-    collector.on('end', async () => {
+    // Wait for the specified duration, then pick winners
+    setTimeout(async () => {
       const reaction = giveawayMessage.reactions.cache.get('🎉');
 
       if (!reaction) {
@@ -105,7 +72,7 @@ module.exports = {
 
       const users = await reaction.users.fetch();
       const eligibleUsers = users.filter(user => !user.bot); // Filter out bots
-      const entryCount = eligibleUsers.size; // Final count of entries
+      const entryCount = eligibleUsers.size; // Count the number of entries
 
       if (entryCount === 0) {
         return channel.send('No participants for the giveaway.');
@@ -123,9 +90,8 @@ module.exports = {
           `You won **${prize}**!\n\n`
         );
 
-      // Send the result embed
       channel.send({ embeds: [resultEmbed] });
-    });
+    }, durationMs);
 
     // Reply to the interaction
     return interaction.reply({ content: `Giveaway for **${prize}** has started in ${channel}!`, ephemeral: true });
