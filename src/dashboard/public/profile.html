@@ -5,120 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Profile</title>
   <link rel="stylesheet" href="/styles.css">
-  <style>
-    body {
-      background-color: #1A1A1A;
-      color: #FFFFFF;
-      font-family: 'Times New Roman', serif;
-    }
-
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      padding: 20px;
-    }
-
-    .profile-card {
-      background-color: #2A2A2A;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-      width: 300px;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-    }
-
-    .profile-card img {
-      border-radius: 50%;
-      width: 100px;
-      height: 100px;
-    }
-
-    .profile-info {
-      margin-top: 10px;
-    }
-
-    .guilds-list {
-      margin-top: 20px;
-    }
-
-    .guild {
-      display: flex;
-      align-items: center;
-      background-color: #3A3A3A;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-    }
-
-    .guild img {
-      width: 40px;
-      height: 40px;
-      border-radius: 5px;
-      margin-right: 10px;
-    }
-
-    .guild-name {
-      font-size: 1.2em;
-    }
-
-    .action-buttons {
-      margin-top: 20px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .action-buttons button {
-      background-color: #FF4C4C;
-      color: #FFFFFF;
-      border: none;
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .footer {
-      background-color: #1A1A1A;
-      text-align: center;
-      padding: 10px;
-      color: white;
-      position: fixed;
-      width: 100%;
-      bottom: 0;
-    }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="profile-card">
-      <img id="avatar" src="" alt="User Avatar">
-      <div class="profile-info">
-        <h2 id="username">Username</h2>
-        <p>User ID: <span id="userId">Loading...</span></p>
-        <p>Role: <span id="role">Loading...</span></p>
-        <p>Language: <span id="language">en</span></p>
-      </div>
-      <div class="guilds-list" id="guilds">
-        <!-- Guilds will be populated here -->
-      </div>
-    </div>
+  <header>
+    <h1>Profile</h1>
+    <a href="/auth/logout">Logout</a>
+  </header>
 
-    <div class="action-buttons">
-      <button id="resetProfile">Reset Profile</button>
-      <button id="wipeData">Wipe Data</button>
-    </div>
+  <div class="profile">
+    <img id="avatar" src="" alt="User Avatar" width="100">
+    <p id="username">Username: Loading...</p>
+    <p id="userId">User ID: Loading...</p>
+    <p id="language">Language: Loading...</p>
+
+    <h2>Servers</h2>
+    <ul id="guilds">
+      <li>Loading servers...</li>
+    </ul>
+
+    <button id="reset">Reset Profile</button>
+    <button id="wipe">Wipe Data</button>
   </div>
-
-  <footer class="footer">
-    <nav>
-      <ul>
-        <li><a href="/termsofservice.html">Terms of Service</a></li>
-        <li><a href="/privacypolicy.html">Privacy Policy</a></li>
-      </ul>
-    </nav>
-    <p>© 2024 Terumi. All rights reserved.</p>
-  </footer>
 
   <script src="/profile.js"></script>
 </body>
