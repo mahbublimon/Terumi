@@ -12,31 +12,70 @@
       font-family: 'Times New Roman', serif;
     }
 
-    .profile-container {
-      background-color: #333;
-      padding: 20px;
-      border-radius: 10px;
-      margin: 40px auto;
-      max-width: 600px;
-      text-align: center;
-    }
-
-    .profile-row {
+    .container {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
     }
 
-    .profile-row p {
-      margin: 0;
+    .profile-card {
+      background-color: #2A2A2A;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .profile-card img {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+    }
+
+    .profile-info {
+      margin-top: 10px;
+    }
+
+    .guilds-list {
+      margin-top: 20px;
+    }
+
+    .guild {
+      display: flex;
+      align-items: center;
+      background-color: #3A3A3A;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+
+    .guild img {
+      width: 40px;
+      height: 40px;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    .guild-name {
       font-size: 1.2em;
     }
 
-    .profile-avatar {
-      border-radius: 50%;
-      margin-bottom: 15px;
-      width: 100px;
-      height: 100px;
+    .action-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .action-buttons button {
+      background-color: #FF4C4C;
+      color: #FFFFFF;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
     .footer {
@@ -51,31 +90,33 @@
   </style>
 </head>
 <body>
-  <!-- Profile Content -->
-  <div class="profile-container">
-    <img id="avatar" class="profile-avatar" src="" alt="User Avatar">
-    <div class="profile-row">
-      <p>Username:</p>
-      <span id="username">Loading...</span>
+  <div class="container">
+    <div class="profile-card">
+      <img id="avatar" src="" alt="User Avatar">
+      <div class="profile-info">
+        <h2 id="username">Username</h2>
+        <p>User ID: <span id="userId">Loading...</span></p>
+        <p>Role: <span id="role">Loading...</span></p>
+        <p>Language: <span id="language">en</span></p>
+      </div>
+      <div class="guilds-list" id="guilds">
+        <!-- Guilds will be populated here -->
+      </div>
     </div>
-    <div class="profile-row">
-      <p>User ID:</p>
-      <span id="userId">Loading...</span>
+
+    <div class="action-buttons">
+      <button id="resetProfile">Reset Profile</button>
+      <button id="wipeData">Wipe Data</button>
     </div>
-    <div class="profile-row">
-      <p>Language:</p>
-      <span id="language">English</span>
-    </div>
-    <div class="profile-row">
-      <p>Guilds:</p>
-      <ul id="guilds"></ul>
-    </div>
-    <button id="resetProfile">Reset Profile</button>
-    <button id="wipeData">Wipe Your Data</button>
   </div>
 
-  <!-- Footer -->
   <footer class="footer">
+    <nav>
+      <ul>
+        <li><a href="/termsofservice.html">Terms of Service</a></li>
+        <li><a href="/privacypolicy.html">Privacy Policy</a></li>
+      </ul>
+    </nav>
     <p>© 2024 Terumi. All rights reserved.</p>
   </footer>
 
