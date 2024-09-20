@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      background-color: #1A1A1A;
+      color: #FFFFFF;
+      font-family: 'Times New Roman', serif;
+    }
+
+    .profile-container {
+      background-color: #333;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 40px auto;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .profile-row p {
+      margin: 0;
+      font-size: 1.2em;
+    }
+
+    .profile-avatar {
+      border-radius: 50%;
+      margin-bottom: 15px;
+      width: 100px;
+      height: 100px;
+    }
+
+    .footer {
+      background-color: #1A1A1A;
+      text-align: center;
+      padding: 10px;
+      color: white;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Profile Content -->
+  <div class="profile-container">
+    <img id="avatar" class="profile-avatar" src="" alt="User Avatar">
+    <div class="profile-row">
+      <p>Username:</p>
+      <span id="username">Loading...</span>
+    </div>
+    <div class="profile-row">
+      <p>User ID:</p>
+      <span id="userId">Loading...</span>
+    </div>
+    <div class="profile-row">
+      <p>Language:</p>
+      <span id="language">English</span>
+    </div>
+    <div class="profile-row">
+      <p>Guilds:</p>
+      <ul id="guilds"></ul>
+    </div>
+    <button id="resetProfile">Reset Profile</button>
+    <button id="wipeData">Wipe Your Data</button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2024 Terumi. All rights reserved.</p>
+  </footer>
+
+  <script src="/profile.js"></script>
+</body>
+</html>
