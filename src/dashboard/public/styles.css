@@ -121,3 +121,32 @@ h2 {
   font-size: 0.9em;
   color: #FFD700;
 }
+/* Profile Page Styles */
+.profile-container {
+  background-color: #333;
+  padding: 20px;
+  border-radius: 10px;
+  margin: 40px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.profile-avatar {
+  border-radius: 50%;
+  margin-bottom: 15px;
+  width: 100px;
+  height: 100px;
+}
+
+/* Footer */
+.footer {
+  background-color: #1A1A1A;
+  padding: 10px;
+  text-align: center;
+}
