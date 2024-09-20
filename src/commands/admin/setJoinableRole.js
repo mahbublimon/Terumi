@@ -1,35 +1,31 @@
-const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const JoinableRole = require('../../models/JoinableRole');
+const hasAdminPermissions = require('../../utils/permissionCheck');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('setjoinablerole')
-    .setDescription('Set the role to assign to new members automatically')
-    .addRoleOption(option => 
+    .setName('setjoinrole')
+    .setDescription('Set a role to be automatically assigned when new members join.')
+    .addRoleOption(option =>
       option.setName('role')
         .setDescription('The role to assign to new members')
         .setRequired(true)),
 
   async execute(interaction) {
-    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    // Check if the user has admin permissions
+    if (!hasAdminPermissions(interaction.member)) {
       return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
     }
 
     const role = interaction.options.getRole('role');
-    const guildID = interaction.guild.id;
 
-    try {
-      // Upsert the joinable role in the database
-      await JoinableRole.findOneAndUpdate(
-        { guildID },
-        { roleID: role.id },
-        { upsert: true }
-      );
+    // Save the joinable role to the database
+    await JoinableRole.findOneAndUpdate(
+      { guildID: interaction.guild.id },
+      { roleID: role.id },
+      { upsert: true }
+    );
 
-      await interaction.reply(`The role ${role.name} has been set as the joinable role.`);
-    } catch (error) {
-      console.error('Error setting joinable role:', error);
-      await interaction.reply('Failed to set the joinable role. Please try again later.');
-    }
+    return interaction.reply(`The role ${role.name} will now be automatically assigned to new members.`);
   },
 };
