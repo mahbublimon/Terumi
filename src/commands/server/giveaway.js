@@ -48,7 +48,13 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor(Colors.Gold) // Use predefined color constant
       .setTitle(`🎉 **${title}** 🎉`) // Custom title from user input
-      .setDescription(`**Prize**: ${prize}\n**Number of Winners**: ${winners}\n**Duration**: ${duration}\n**Hosted by**: ${host}`)
+      .setDescription(
+        `**Prize**: ${prize}\n` +
+        `**Number of Winners**: ${winners}\n` +
+        `**Duration**: ${duration}\n` +
+        `**Entries**: 0\n` +  // Initial entries count set to 0
+        `**Hosted by**: ${host}`
+      )
       .setFooter({ text: 'React with 🎉 to enter!' })
       .setTimestamp(Date.now() + durationMs); // Show the time when the giveaway ends
 
@@ -79,7 +85,10 @@ module.exports = {
       const resultEmbed = new EmbedBuilder()
         .setColor(Colors.Green)
         .setTitle(`🎉 **${title} - Winners** 🎉`) // Show the custom title in the winner announcement
-        .setDescription(`Congratulations to ${winnersList.map(user => user.toString()).join(', ')}! You won **${prize}**!\n\n**Entries**: ${entryCount}\n**Hosted by**: ${host}`);
+        .setDescription(
+          `Congratulations to ${winnersList.map(user => user.toString()).join(', ')}! ` +
+          `You won **${prize}**!\n\n`
+        );
 
       channel.send({ embeds: [resultEmbed] });
     }, durationMs);
