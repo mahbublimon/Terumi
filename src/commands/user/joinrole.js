@@ -7,14 +7,13 @@ module.exports = {
     .setDescription('Join the joinable role.'),
   
   async execute(interaction) {
-    const joinableRoleId = getJoinableRole(interaction.guild);
+    // Fetch the joinable role from the database
+    const role = await getJoinableRole(interaction.guild);
 
     // Check if a joinable role has been set
-    if (!joinableRoleId) {
+    if (!role) {
       return interaction.reply({ content: 'No joinable role has been set for this server.', ephemeral: true });
     }
-
-    const role = interaction.guild.roles.cache.get(joinableRoleId);
 
     // Check if the user already has the role
     if (interaction.member.roles.cache.has(role.id)) {
