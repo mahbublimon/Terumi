@@ -4,7 +4,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('hug')
-    .setDescription('Hug someone')
+    .setDescription('Hug someone with an anime GIF')
     .addUserOption(option =>
       option.setName('user')
         .setDescription('User to hug')
@@ -15,17 +15,16 @@ module.exports = {
     const gifResponse = await axios.get(`https://api.giphy.com/v1/gifs/random`, {
       params: {
         api_key: process.env.GIPHY_API,
-        tag: 'hug',
+        tag: 'anime hug', // Anime-related tag for hug action
       },
     });
 
     const gifUrl = gifResponse.data.data.images.original.url;
 
-    // Create an embed to hide the URL but display the GIF
     const embed = new EmbedBuilder()
-      .setDescription(`**${interaction.user} hugged ${target}!**`) // Mention users in the message
-      .setImage(gifUrl)  // Display the GIF
-      .setColor(0xFFC0CB);  // Optional: Set a color for the embed
+      .setDescription(`**${interaction.user} hugs ${target}!**`)
+      .setImage(gifUrl)
+      .setColor(0xFFC0CB);
 
     await interaction.reply({ embeds: [embed] });
   },
