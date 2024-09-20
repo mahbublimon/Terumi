@@ -22,7 +22,7 @@ module.exports = {
     const gifUrl = gifResponse.data.data.images.original.url;
 
     const embed = new EmbedBuilder()
-      .setDescription(`**${interaction.user} bit ${target}!**`)
+      .setDescription(`**${interaction.user} bite ${target}!**`)
       .setImage(gifUrl)
       .setColor(0xDC143C);  // Crimson color
 
