@@ -9,7 +9,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor('PURPLE')
       .setTitle('Vote for Terumi')
-      .setDescription('Support Terumi by voting for us! [Click here to vote](https://top.gg/bot/)')
+      .setDescription('Support Terumi by voting for us! [Click here to vote](https://top.gg/bot/1282770910197190666/vote)')
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed] });
