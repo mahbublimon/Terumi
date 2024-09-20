@@ -7,7 +7,7 @@ module.exports = {
 
   async execute(interaction) {
     const embed = new EmbedBuilder()
-      .setColor(0x800080) // Purple in hexadecimal (you can also use other colors like EmbedBuilder.Colors.Blue)
+      .setColor(0x800080) // Purple color in hexadecimal
       .setTitle('Vote for Terumi')
       .setDescription('Support Terumi by voting for us! [Click here to vote](https://top.gg/bot/1282770910197190666/vote)')
       .setTimestamp();
