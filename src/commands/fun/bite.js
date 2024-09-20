@@ -4,7 +4,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('bite')
-    .setDescription('Bite someone')
+    .setDescription('Bite someone with an anime GIF')
     .addUserOption(option =>
       option.setName('user')
         .setDescription('User to bite')
@@ -15,16 +15,16 @@ module.exports = {
     const gifResponse = await axios.get(`https://api.giphy.com/v1/gifs/random`, {
       params: {
         api_key: process.env.GIPHY_API,
-        tag: 'bite',
+        tag: 'anime bite',  // Anime-specific tag
       },
     });
 
     const gifUrl = gifResponse.data.data.images.original.url;
 
     const embed = new EmbedBuilder()
-      .setDescription(`**${interaction.user} bit ${target}!**`)
+      .setDescription(`**${interaction.user} bites ${target}!**`)
       .setImage(gifUrl)
-      .setColor(0xDC143C);  // Crimson color
+      .setColor(0xFFC0CB);
 
     await interaction.reply({ embeds: [embed] });
   },
