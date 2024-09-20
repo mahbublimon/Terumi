@@ -1,6 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js'); // Use Colors for predefined color constants
 const ms = require('ms'); // For handling giveaway duration
 
+// Store the giveaway message IDs to allow rerolling later
+let giveaways = new Map();
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('giveaway')
@@ -33,104 +36,89 @@ module.exports = {
 
   async execute(interaction) {
     const channel = interaction.options.getChannel('channel');
-    const title = interaction.options.getString('title'); // Custom title
+    const title = interaction.options.getString('title');
     const duration = interaction.options.getString('duration');
     const winners = interaction.options.getInteger('winners');
     const prize = interaction.options.getString('prize');
-    const durationMs = ms(duration); // Convert duration to milliseconds
-    const host = interaction.user; // The person who starts the giveaway
+    const durationMs = ms(duration);
+    const host = interaction.user;
 
-    // Check if the duration was parsed correctly
     if (!durationMs || durationMs <= 0) {
       return interaction.reply({ content: 'Invalid duration format. Please use a format like `3d`, `2h`, or `30m`.', ephemeral: true });
     }
 
-    // Initial embed with 0 entries
     const embed = new EmbedBuilder()
-      .setColor(Colors.Gold) // Use predefined color constant
-      .setTitle(`🎉 **${title}** 🎉`) // Custom title from user input
+      .setColor(Colors.Gold)
+      .setTitle(`🎉 **${title}** 🎉`)
       .setDescription(
-        `**Prize**: ${prize}\n` +
         `**Number of Winners**: ${winners}\n` +
-        `**Duration**: ${duration}\n` +
-        `**Entries**: 0\n` +  // Initial entries count set to 0
-        `**Hosted by**: ${host}`
+        `**Ends in**: ${duration}\n` +
+        `**Hosted by**: ${host}\n` +
+        `**Entries**: 0`
       )
       .setFooter({ text: 'React with 🎉 to enter!' })
-      .setTimestamp(Date.now() + durationMs); // Show the time when the giveaway ends
+      .setTimestamp(Date.now() + durationMs);
 
-    // Send the giveaway message and add reaction
     const giveawayMessage = await channel.send({ embeds: [embed] });
-    giveawayMessage.react('🎉'); // React with 🎉 emoji
+    giveawayMessage.react('🎉');
 
-    // Track users who react to the giveaway
+    let entryCount = 0;
+
     const filter = (reaction, user) => {
-      return reaction.emoji.name === '🎉' && !user.bot; // Only count real users
+      return reaction.emoji.name === '🎉' && !user.bot;
     };
 
     const collector = giveawayMessage.createReactionCollector({ filter, time: durationMs });
 
-    // Define the entryCount variable to track participants
-    let entryCount = 0;
-
-    // Update the embed with the new entries count dynamically
     collector.on('collect', async () => {
       const reaction = giveawayMessage.reactions.cache.get('🎉');
       const users = await reaction.users.fetch();
-      const eligibleUsers = users.filter(user => !user.bot); // Filter out bots
+      const eligibleUsers = users.filter(user => !user.bot);
       entryCount = eligibleUsers.size;
 
-      // Edit the message to update the entries count
       const updatedEmbed = new EmbedBuilder()
         .setColor(Colors.Gold)
         .setTitle(`🎉 **${title}** 🎉`)
         .setDescription(
-          `**Prize**: ${prize}\n` +
           `**Number of Winners**: ${winners}\n` +
-          `**Duration**: ${duration}\n` +
-          `**Entries**: ${entryCount}\n` +  // Update the entries count
-          `**Hosted by**: ${host}`
+          `**Ends in**: ${duration}\n` +
+          `**Hosted by**: ${host}\n` +
+          `**Entries**: ${entryCount}`
         )
         .setFooter({ text: 'React with 🎉 to enter!' })
-        .setTimestamp(Date.now() + durationMs); // Keep the original timestamp
+        .setTimestamp(Date.now() + durationMs);
 
-      // Edit the original message with the new embed
       giveawayMessage.edit({ embeds: [updatedEmbed] });
     });
 
-    // After the giveaway ends, pick the winners
     collector.on('end', async () => {
       const reaction = giveawayMessage.reactions.cache.get('🎉');
-
-      if (!reaction) {
-        return channel.send('No one reacted to the giveaway!');
-      }
-
       const users = await reaction.users.fetch();
-      const eligibleUsers = users.filter(user => !user.bot); // Filter out bots
-      entryCount = eligibleUsers.size; // Final count of entries
+      const eligibleUsers = users.filter(user => !user.bot);
+      entryCount = eligibleUsers.size;
 
       if (entryCount === 0) {
         return channel.send('No participants for the giveaway.');
       }
 
-      // Randomly select the winners
       const winnersList = eligibleUsers.random(winners);
-
-      // Create the result embed
       const resultEmbed = new EmbedBuilder()
         .setColor(Colors.Green)
-        .setTitle(`🎉 **${title} - Winners** 🎉`) // Show the custom title in the winner announcement
+        .setTitle(`🎉 **${title} - Winners** 🎉`)
         .setDescription(
-          `Congratulations to ${winnersList.map(user => user.toString()).join(', ')}! ` +
-          `You won **${prize}**!\n\n`
+          `**Number of Winners**: ${winners}\n` +
+          `**Ended**\n` +
+          `**Hosted by**: ${host}\n` +
+          `**Entries**: ${entryCount}\n\n` +
+          `**Winners**: ${winnersList.map(user => user.toString()).join(', ')}`
         );
 
-      // Send the result embed
       channel.send({ embeds: [resultEmbed] });
+
+      // Store the giveaway message ID for future rerolls
+      giveaways.set(giveawayMessage.id, { eligibleUsers, winners, prize, title });
     });
 
-    // Reply to the interaction
     return interaction.reply({ content: `Giveaway for **${prize}** has started in ${channel}!`, ephemeral: true });
   },
 };
