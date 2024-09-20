@@ -1,6 +1,7 @@
-const express = require('express'); 
+const express = require('express');
+const path = require('path');
 const router = express.Router();
-const { client } = require('../../../bot'); // Import bot client
+const { client } = require('../../../bot');
 
 // Middleware to check if the user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -10,12 +11,30 @@ const isAuthenticated = (req, res, next) => {
   next();
 };
 
-// Route to serve the profile page
+// Serve profile page
 router.get('/profile', isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, '../public/profile.html'));
 });
 
-// Route to fetch the user's profile data
+// Serve bot stats
+router.get('/stats', (req, res) => {
+  const uptimeInSeconds = Math.floor(client.uptime / 1000); // Convert milliseconds to seconds
+  const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
+  const cachedUsers = client.users.cache.size;
+  const totalChannels = client.channels.cache.size;
+  const totalServers = client.guilds.cache.size;
+
+  res.json({
+    servers: totalServers,
+    users: totalUsers,
+    cachedUsers: cachedUsers,
+    channels: totalChannels,
+    messagesPerMinute: 0, // Adjust for your message count logic
+    uptime: uptimeInSeconds,
+  });
+});
+
+// API endpoint for fetching user profile
 router.get('/api/profile', isAuthenticated, (req, res) => {
   try {
     const user = req.session.user;
@@ -25,6 +44,7 @@ router.get('/api/profile', isAuthenticated, (req, res) => {
       username: user.username,
       userId: user.id,
       avatar: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`,
+      language: user.language || 'en',
       guilds: guilds.map(guild => ({
         name: guild.name,
         id: guild.id,
@@ -32,18 +52,18 @@ router.get('/api/profile', isAuthenticated, (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('Error fetching profile data:', error);
+    console.error('Error fetching profile:', error);
     res.status(500).json({ message: 'Failed to load profile data' });
   }
 });
 
-// Route to reset user profile data
+// API endpoint to reset user profile
 router.post('/api/profile/reset', isAuthenticated, (req, res) => {
-  req.session.user.language = 'en';  // Reset language or other preferences
+  req.session.user.language = 'en'; // Reset user language or preferences
   res.json({ message: 'Profile reset successfully' });
 });
 
-// Route to wipe user data
+// API endpoint to wipe user data
 router.post('/api/profile/wipe', isAuthenticated, (req, res) => {
   try {
     req.session.destroy(err => {
