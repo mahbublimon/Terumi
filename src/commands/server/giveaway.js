@@ -107,7 +107,6 @@ module.exports = {
         .setTitle(`🎉 **${title} - Winners** 🎉`)
         .setDescription(
           `**Number of Winners**: ${winners}\n` +
-          `**Ended**\n` +
           `**Hosted by**: ${host}\n` +
           `**Entries**: ${entryCount}\n\n` +
           `**Winners**: ${winnersList.map(user => user.toString()).join(', ')}`
