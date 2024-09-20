@@ -11,6 +11,11 @@ module.exports = {
         .setRequired(true)
     )
     .addStringOption(option => 
+      option.setName('title')
+        .setDescription('The title of the giveaway') // Added a custom title option
+        .setRequired(true)
+    )
+    .addStringOption(option => 
       option.setName('duration')
         .setDescription('The duration of the giveaway (e.g., 3d, 2h, 30m)')
         .setRequired(true)
@@ -28,10 +33,12 @@ module.exports = {
 
   async execute(interaction) {
     const channel = interaction.options.getChannel('channel');
+    const title = interaction.options.getString('title'); // Custom title
     const duration = interaction.options.getString('duration');
     const winners = interaction.options.getInteger('winners');
     const prize = interaction.options.getString('prize');
     const durationMs = ms(duration); // Convert duration to milliseconds
+    const host = interaction.user; // The person who starts the giveaway
 
     // Check if the duration was parsed correctly
     if (!durationMs || durationMs <= 0) {
@@ -40,8 +47,8 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(Colors.Gold) // Use predefined color constant
-      .setTitle('🎉 **Giveaway!** 🎉')
-      .setDescription(`**Prize**: ${prize}\n**Number of Winners**: ${winners}\n**Duration**: ${duration}`)
+      .setTitle(`🎉 **${title}** 🎉`) // Custom title from user input
+      .setDescription(`**Prize**: ${prize}\n**Number of Winners**: ${winners}\n**Duration**: ${duration}\n**Hosted by**: ${host}`)
       .setFooter({ text: 'React with 🎉 to enter!' })
       .setTimestamp(Date.now() + durationMs); // Show the time when the giveaway ends
 
@@ -59,8 +66,9 @@ module.exports = {
 
       const users = await reaction.users.fetch();
       const eligibleUsers = users.filter(user => !user.bot); // Filter out bots
+      const entryCount = eligibleUsers.size; // Count the number of entries
 
-      if (eligibleUsers.size === 0) {
+      if (entryCount === 0) {
         return channel.send('No participants for the giveaway.');
       }
 
@@ -70,8 +78,8 @@ module.exports = {
       // Create the result embed
       const resultEmbed = new EmbedBuilder()
         .setColor(Colors.Green)
-        .setTitle('🎉 **Giveaway Winners** 🎉')
-        .setDescription(`Congratulations to ${winnersList.map(user => user.toString()).join(', ')}! You won **${prize}**!`);
+        .setTitle(`🎉 **${title} - Winners** 🎉`) // Show the custom title in the winner announcement
+        .setDescription(`Congratulations to ${winnersList.map(user => user.toString()).join(', ')}! You won **${prize}**!\n\n**Entries**: ${entryCount}\n**Hosted by**: ${host}`);
 
       channel.send({ embeds: [resultEmbed] });
     }, durationMs);
