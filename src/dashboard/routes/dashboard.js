@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const router = express.Router();
-const { client } = require('../../../bot');
+const { client } = require('../../../bot'); // Import bot client
 
 // Middleware to check if the user is authenticated
 const isAuthenticated = (req, res, next) => {
