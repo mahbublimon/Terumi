@@ -9,7 +9,6 @@ const fs = require('fs'); // File system module
 const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 const session = require('express-session'); // For session management
 const { Webhook } = require('@top-gg/sdk'); // Top.gg SDK for vote tracking
-const { playSpotifyTrack } = require('./src/utils/musicPlayer'); // Import music player functions
 const { client } = require('./bot'); // Use the client exported from bot.js
 
 // Initialize Express App for Dashboard and Top.gg Webhooks
