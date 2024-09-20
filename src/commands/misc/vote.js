@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -7,7 +7,7 @@ module.exports = {
 
   async execute(interaction) {
     const embed = new EmbedBuilder()
-      .setColor(Colors.Purple) // Use the correct color constant
+      .setColor(0x800080) // Purple in hexadecimal (you can also use other colors like EmbedBuilder.Colors.Blue)
       .setTitle('Vote for Terumi')
       .setDescription('Support Terumi by voting for us! [Click here to vote](https://top.gg/bot/1282770910197190666/vote)')
       .setTimestamp();
