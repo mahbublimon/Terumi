@@ -8,14 +8,16 @@ const path = require('path');
 const fs = require('fs'); // File system module
 const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
 const session = require('express-session'); // For session management
-const { Topgg } = require('@top-gg/sdk'); // Top.gg SDK for vote tracking
-const { playSpotifyTrack } = require('./src/utils/musicPlayer'); // Import music player functions (adjust if necessary)
+const { Webhook } = require('@top-gg/sdk'); // Top.gg SDK for vote tracking
+const { playSpotifyTrack } = require('./src/utils/musicPlayer'); // Import music player functions
 const { client } = require('./bot'); // Use the client exported from bot.js
 
 // Initialize Express App for Dashboard and Top.gg Webhooks
 const app = express();
 const PORT = process.env.PORT || 3000;
-const topggWebhook = new Topgg.Webhook(process.env.TOPGG_WEBHOOK_AUTH); // Top.gg webhook auth token
+
+// Top.gg webhook auth token from environment variables
+const topggWebhook = new Webhook(process.env.TOPGG_WEBHOOK_AUTH); // Use the token from the .env file
 
 // Configure session middleware
 app.use(session({
@@ -39,6 +41,22 @@ app.listen(PORT, (error) => {
   } else {
     console.log(`Dashboard running on port ${PORT}`);
   }
+});
+
+// Top.gg Webhook Endpoint for receiving votes
+app.post('/topgg-webhook', topggWebhook.middleware(), async (req, res) => {
+  const { user } = req.vote;
+
+  const logChannelId = process.env.VOTE_LOG_CHANNEL_ID; // Log channel ID for storing votes
+  const logChannel = client.channels.cache.get(logChannelId);
+
+  if (!logChannel) {
+    console.error('Log channel not found.');
+    return res.status(500).send('Log channel not found.');
+  }
+
+  await logChannel.send(`User <@${user}> has voted for the bot! 🎉`);
+  res.status(200).send('Vote registered.');
 });
 
 // Route for Premium Page
@@ -116,23 +134,6 @@ app.get('/auth/logout', (req, res) => {
     }
     res.redirect('/'); // Redirect to home page or login
   });
-});
-
-// Top.gg Webhook Endpoint for receiving votes
-app.post('/topgg-webhook', topggWebhook.middleware(), async (req, res) => {
-  const { user } = req.vote;
-
-  const logChannelId = process.env.VOTE_LOG_CHANNEL_ID; // Log channel ID for storing votes
-  const logChannel = client.channels.cache.get(logChannelId);
-
-  if (!logChannel) {
-    console.error('Log channel not found.');
-    return res.status(500).send('Log channel not found.');
-  }
-
-  await logChannel.send(`User <@${user}> has voted for the bot! 🎉`);
-
-  res.status(200).send('Vote registered.');
 });
 
 // Connect to MongoDB using the `database.js` file
