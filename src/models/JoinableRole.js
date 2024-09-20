@@ -4,7 +4,6 @@ const joinableRoleSchema = new mongoose.Schema({
   guildID: {
     type: String,
     required: true,
-    unique: true,
   },
   roleID: {
     type: String,
