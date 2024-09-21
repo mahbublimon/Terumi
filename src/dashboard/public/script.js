@@ -12,12 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/stats')
       .then(response => response.json())
       .then(data => {
-        serversElement.textContent = data.servers;
-        usersElement.textContent = data.users;
-        cachedUsersElement.textContent = data.cachedUsers;
-        channelsElement.textContent = data.channels;
-        messagesPerMinuteElement.textContent = data.messagesPerMinute;
-        uptimeElement.textContent = formatUptime(data.uptime);
+        serversElement.textContent = data.servers || 'N/A';
+        usersElement.textContent = data.users || 'N/A';
+        cachedUsersElement.textContent = data.cachedUsers || 'N/A';
+        channelsElement.textContent = data.channels || 'N/A';
+        messagesPerMinuteElement.textContent = data.messagesPerMinute || 'N/A';
+        uptimeElement.textContent = formatUptime(data.uptime || 0);
       })
       .catch(err => console.error('Error fetching stats:', err));
   }
