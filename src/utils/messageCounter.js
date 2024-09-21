@@ -6,13 +6,13 @@ function incrementMessageCount() {
   messageCount++;
 }
 
-// Reset message count every minute and calculate the MPM
+// Reset message count and calculate messages per minute
 function resetMessageCount() {
   messagesPerMinute = messageCount;
   messageCount = 0;
 }
 
-// Return the latest MPM value
+// Get the current messages per minute
 function getMessagesPerMinute() {
   return messagesPerMinute;
 }
