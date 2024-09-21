@@ -23,13 +23,14 @@ router.get('/stats', (req, res) => {
   const cachedUsers = client.users.cache.size;
   const totalChannels = client.channels.cache.size;
   const totalServers = client.guilds.cache.size;
+  const messagesPerMinute = getMessagesPerMinute(); // Adjust for your message count logic
 
   res.json({
     servers: totalServers,
     users: totalUsers,
     cachedUsers: cachedUsers,
     channels: totalChannels,
-    messagesPerMinute: 0, // Adjust for your message count logic
+    messagesPerMinute, // Use the calculated value here
     uptime: uptimeInSeconds,
   });
 });
