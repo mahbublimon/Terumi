@@ -1,48 +1,72 @@
-const { ChannelType, PermissionFlagsBits } = require('discord.js');
 const Ticket = require('../models/Ticket');
-const autoAssign = require('../utils/autoAssign'); // For auto-assigning staff members
+const autoAssign = require('../utils/autoAssign');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  name: 'interactionCreate',
-  async execute(interaction) {
-    if (!interaction.isButton()) return;
-
-    // Create a ticket if the user clicks "Create Ticket"
-    if (interaction.customId === 'create-ticket-button') {
-      const ticketId = Math.random().toString(36).substring(2, 8); // Generate a random ticket ID
-      const staff = await autoAssign(interaction.guild); // Auto-assign a staff member
-
-      // Create a private channel for the ticket
-      const ticketChannel = await interaction.guild.channels.create({
-        name: `ticket-${ticketId}`,
-        type: ChannelType.GuildText,
-        permissionOverwrites: [
-          {
-            id: interaction.guild.roles.everyone,
-            deny: [PermissionFlagsBits.ViewChannel],
-          },
-          {
-            id: interaction.user.id,
-            allow: [PermissionFlagsBits.ViewChannel],
-          },
-          {
-            id: staff.id,
-            allow: [PermissionFlagsBits.ViewChannel],
-          },
-        ],
-      });
-
-      // Store the ticket in the database
-      await Ticket.create({
-        userId: interaction.user.id,
-        channelId: ticketChannel.id,
-        staffId: staff.id,
-        status: 'open',
-      });
-
-      await interaction.reply({ content: `Ticket created! A staff member has been assigned: ${staff}.`, ephemeral: true });
-
-      ticketChannel.send(`Ticket #${ticketId} created by <@${interaction.user.id}>. Assigned staff: <@${staff.id}>.`);
+  name: 'guildMemberAdd',
+  
+  async execute(member) {
+    const guildID = member.guild.id;
+    const role = member.guild.roles.cache.find(r => r.name === "Support");
+    if(role){
+       member.roles.add(role);
     }
-  },
+    console.log("Member ", member.displayName ,"was successfully added");
+    // Fetch any previous open tickets for this member
+    const openTicket = await Ticket.findOne({ userID: member.id, status: 'open' });
+
+    if (openTicket) {
+      console.log(`User ${member.user.tag} already has an open ticket.`);
+      return;
+    }
+
+    // Create a new ticket in the database
+    const ticket = await Ticket.create({
+      userID: member.id,
+      supportID: null, // This will be assigned later
+      status: 'open',
+      issue: 'New ticket created by system on member join' // Default issue
+    });
+
+    // Automatically assign a support staff using the auto-assign utility
+    const supportStaff = await autoAssign.assignSupport();
+
+    if (!supportStaff) {
+      console.error('No available support staff for ticket assignment.');
+      return;
+    }
+
+    // Create a private channel for the ticket in the server
+    const ticketChannel = await member.guild.channels.create(`ticket-${ticket.id}`, {
+      type: 'GUILD_TEXT',
+      permissionOverwrites: [
+        {
+          id: member.guild.id, // Block everyone from viewing
+          deny: ['VIEW_CHANNEL'],
+        },
+        {
+          id: member.id, // Allow the user who created the ticket to view and send messages
+          allow: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+        },
+        {
+          id: supportStaff.id, // Allow assigned support staff to view and send messages
+          allow: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+        },
+      ],
+    });
+
+    // Update the ticket in the database with the channel ID and support ID
+    ticket.channelID = ticketChannel.id;
+    ticket.supportID = supportStaff.id;
+    await ticket.save();
+
+    // Send a message to the newly created channel to notify the user and the support staff
+    const embed = new EmbedBuilder()
+      .setTitle(`Ticket #${ticket.id} Created`)
+      .setDescription(`Ticket for **${member.user.tag}** has been created and assigned to ${supportStaff.user.tag}.`)
+      .setColor('GREEN')
+      .setTimestamp();
+
+    await ticketChannel.send({ content: `<@${supportStaff.id}>`, embeds: [embed] });
+  }
 };
