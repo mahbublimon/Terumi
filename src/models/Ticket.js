@@ -1,14 +1,11 @@
-// src/models/Ticket.js
-const { Schema, model } = require('mongoose');
+const mongoose = require('mongoose');
 
-const ticketSchema = new Schema({
-  ticketID: { type: String, required: true },
-  userID: { type: String, required: true },
-  channelID: { type: String, required: true },
-  guildID: { type: String, required: true },
-  status: { type: String, default: 'open' }, // open or closed
+const ticketSchema = new mongoose.Schema({
+  userId: String,
+  channelId: String,
+  staffId: String,
+  status: { type: String, default: 'open' },
   createdAt: { type: Date, default: Date.now },
-  closedAt: { type: Date },
 });
 
-module.exports = model('Ticket', ticketSchema);
+module.exports = mongoose.model('Ticket', ticketSchema);
