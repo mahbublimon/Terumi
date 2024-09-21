@@ -1,14 +1,12 @@
-let messageCount = 0;
-let messagesPerMinute = 0;
+const { incrementMessageCount } = require('../utils/messageCounter');
 
-// Listen for the 'messageCreate' event
 module.exports = {
   name: 'messageCreate',
-  async execute(message) {
+  execute(message) {
     // Ignore bot messages
     if (message.author.bot) return;
 
-    // Increment message count for every message created
-    messageCount++;
+    // Increment the message count
+    incrementMessageCount();
   },
 };
