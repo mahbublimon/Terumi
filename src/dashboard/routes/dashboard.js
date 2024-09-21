@@ -18,21 +18,22 @@ router.get('/profile', isAuthenticated, (req, res) => {
 
 // Serve bot stats
 router.get('/stats', (req, res) => {
-  const uptimeInSeconds = Math.floor(client.uptime / 1000); // Convert milliseconds to seconds
-  const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
-  const cachedUsers = client.users.cache.size;
-  const totalChannels = client.channels.cache.size;
-  const totalServers = client.guilds.cache.size;
-  const messagesPerMinute = getMessagesPerMinute(); // Adjust for your message count logic
+  try {
+    const uptimeInSeconds = Math.floor(client.uptime / 1000); // Convert milliseconds to seconds
+    const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
+    const cachedUsers = client.users.cache.size;
+    const totalChannels = client.channels.cache.size;
+    const totalServers = client.guilds.cache.size;
+    const messagesPerMinute = getMessagesPerMinute(); // Fetch the messages per minute
 
-  res.json({
-    servers: totalServers,
-    users: totalUsers,
-    cachedUsers: cachedUsers,
-    channels: totalChannels,
-    messagesPerMinute, // Use the calculated value here
-    uptime: uptimeInSeconds,
-  });
+    res.json({
+      servers: totalServers,
+      users: totalUsers,
+      cachedUsers: cachedUsers,
+      channels: totalChannels,
+      messagesPerMinute: messagesPerMinute,
+      uptime: uptimeInSeconds,
+    });
 });
 
 // API endpoint for fetching user profile
