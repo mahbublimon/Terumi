@@ -2,7 +2,6 @@ require('dotenv').config(); // Load environment variables
 const { Client, GatewayIntentBits, Collection } = require('discord.js'); // Import necessary Discord.js classes
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const connectDB = require('./database'); // Import the database connection function
 const express = require('express');
 const path = require('path');
 const fs = require('fs'); // Import fs module to handle file system operations
@@ -10,6 +9,7 @@ const axios = require('axios'); // For handling Discord OAuth2 token and user fe
 const session = require('express-session'); // For session management
 const { Webhook } = require('@top-gg/sdk'); // Top.gg SDK for vote tracking
 const { client } = require('./bot'); // Use the client exported from bot.js
+const connectDB = require('./database'); // Import the database connection function
 
 // Initialize Express App for Dashboard and Top.gg Webhooks
 const app = express();
