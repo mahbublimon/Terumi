@@ -1,30 +1,36 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const Ticket = require('../../models/Ticket');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('close-ticket')
-    .setDescription('Close an existing ticket')
-    .addStringOption(option => 
-      option.setName('ticket-id')
-        .setDescription('The ID of the ticket to close')
-        .setRequired(true)
-    ),
+    .setDescription('Close an active support ticket'),
 
   async execute(interaction) {
-    const ticketId = interaction.options.getString('ticket-id');
-    const ticket = await Ticket.findOne({ _id: ticketId });
+    const channel = interaction.channel;
 
+    // Fetch ticket from the database based on channel
+    const ticket = await Ticket.findOne({ channelID: channel.id });
+    
     if (!ticket) {
-      return interaction.reply({ content: 'Ticket not found.', ephemeral: true });
+      return interaction.reply({ content: 'This is not a valid ticket channel.', ephemeral: true });
     }
 
-    // Close the ticket and archive it
-    await Ticket.updateOne({ _id: ticketId }, { status: 'closed' });
+    // Update the ticket status to 'closed'
+    ticket.status = 'closed';
+    await ticket.save();
 
-    const ticketChannel = interaction.guild.channels.cache.get(ticket.channelId);
-    if (ticketChannel) await ticketChannel.delete();
+    // Notify the channel that the ticket is closed
+    const embed = new EmbedBuilder()
+      .setTitle(`Ticket #${ticket.id} Closed`)
+      .setDescription('The ticket has been successfully closed.')
+      .setColor('RED');
 
-    await interaction.reply({ content: `Ticket #${ticketId} has been closed and archived.`, ephemeral: true });
-  },
+    await channel.send({ embeds: [embed] });
+
+    // Optionally delete the channel
+    setTimeout(() => {
+      channel.delete();
+    }, 60000);
+  }
 };
