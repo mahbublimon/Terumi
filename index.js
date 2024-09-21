@@ -2,7 +2,6 @@ require('dotenv').config(); // Load environment variables
 const { Client, GatewayIntentBits, Collection } = require('discord.js'); // Import necessary Discord.js classes
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const connectDB = require('./database'); // Import the database connection function
 const express = require('express');
 const path = require('path');
 const fs = require('fs'); // Import fs module to handle file system operations
@@ -10,6 +9,7 @@ const axios = require('axios'); // For handling Discord OAuth2 token and user fe
 const session = require('express-session'); // For session management
 const { Webhook } = require('@top-gg/sdk'); // Top.gg SDK for vote tracking
 const { client } = require('./bot'); // Use the client exported from bot.js
+const connectDB = require('./database'); // Import the database connection function
 
 // Initialize Express App for Dashboard and Top.gg Webhooks
 const app = express();
@@ -36,9 +36,9 @@ app.use('/api', dashboardRoutes);
 // Start the Express dashboard server with error handling
 app.listen(PORT, (error) => {
   if (error) {
-    console.error(Error starting dashboard server: ${error.message});
+    console.error(`Error starting dashboard server: ${error.message}`);
   } else {
-    console.log(Dashboard running on port ${PORT});
+    console.log(`Dashboard running on port ${PORT}`);
   }
 });
 
@@ -54,7 +54,7 @@ app.post('/topgg-webhook', topggWebhook.middleware(), async (req, res) => {
     return res.status(500).send('Log channel not found.');
   }
 
-  await logChannel.send(User <@${user}> has voted for the bot! 🎉);
+  await logChannel.send(`User <@${user}> has voted for the bot! 🎉`);
   res.status(200).send('Vote registered.');
 });
 
@@ -68,7 +68,7 @@ app.get('/auth/discord', (req, res) => {
   const clientId = process.env.DISCORD_CLIENT_ID;
   const redirectUri = encodeURIComponent(process.env.REDIRECT_URI);
 
-  const discordAuthUrl = https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify;
+  const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
 
   res.redirect(discordAuthUrl);
 });
@@ -100,7 +100,7 @@ app.get('/auth/discord/callback', async (req, res) => {
 
     // Use access token to fetch user data
     const userResponse = await axios.get('https://discord.com/api/users/@me', {
-      headers: { Authorization: Bearer ${access_token} },
+      headers: { Authorization: `Bearer ${access_token}` },
     });
 
     const user = userResponse.data;
@@ -122,7 +122,7 @@ app.get('/dashboard', (req, res) => {
     return res.redirect('/auth/discord'); // Redirect to login if not authenticated
   }
 
-  res.send(Welcome to your dashboard, ${req.session.user.username}!);
+  res.send(`Welcome to your dashboard, ${req.session.user.username}!`);
 });
 
 // Route for logout
@@ -135,12 +135,12 @@ app.get('/auth/logout', (req, res) => {
   });
 });
 
-// Connect to MongoDB using the database.js file
+// Connect to MongoDB using the `database.js` file
 connectDB();
 
 // Bot ready event
 client.once('ready', async () => {
-  console.log(${client.user.tag} is online and ready!);
+  console.log(`${client.user.tag} is online and ready!`);
   await registerSlashCommands();
   setPresence();
 });
@@ -148,7 +148,7 @@ client.once('ready', async () => {
 // Set bot presence (status message)
 function setPresence() {
   if (client.guilds.cache.size > 0) {
-    client.user.setActivity(Serving ${client.guilds.cache.size} servers, { type: 'WATCHING' });
+    client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
   } else {
     client.user.setActivity('Starting up...', { type: 'PLAYING' });
   }
@@ -160,18 +160,18 @@ async function registerSlashCommands() {
   const commands = [];
 
   for (const folder of commandFolders) {
-    const commandFiles = fs.readdirSync(./src/commands/${folder}).filter(file => file.endsWith('.js'));
+    const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
 
     for (const file of commandFiles) {
-      const command = require(./src/commands/${folder}/${file});
+      const command = require(`./src/commands/${folder}/${file}`);
 
       // Ensure the command uses SlashCommandBuilder
       if (command.data && typeof command.data.toJSON === 'function' && command.execute) {
         client.commands.set(command.data.name, command); // Ensure commands are set into the collection
         commands.push(command.data.toJSON()); // Prepare for registration
-        console.log(Registered command: ${command.data.name});
+        console.log(`Registered command: ${command.data.name}`);
       } else {
-        console.error(Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property, or is not using SlashCommandBuilder.);
+        console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property, or is not using SlashCommandBuilder.`);
       }
     }
   }
