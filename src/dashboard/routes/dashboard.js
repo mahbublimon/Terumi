@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const router = express.Router();
 const { client } = require('../../../bot'); // Import bot client
-const { getMessagesPerMinute } = require('../../utils/messageCounter'); // Import message counter utility
+const { getMessagesPerMinute } = require('../../utils/messageCounter'); // Import the message counter utility
 
 // Middleware to check if the user is authenticated
 const isAuthenticated = (req, res, next) => {
