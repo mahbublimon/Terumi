@@ -1,22 +1,20 @@
 let messageCount = 0;
-let lastResetTime = Date.now();
 
+// Increment the message count whenever a message is sent
 function trackMessage() {
   messageCount++;
 }
 
+// Calculate messages per minute
 function getMessagesPerMinute() {
-  const now = Date.now();
-  const elapsedMinutes = (now - lastResetTime) / 60000; // Convert milliseconds to minutes
-  const messagesPerMinute = elapsedMinutes > 0 ? messageCount / elapsedMinutes : 0;
-
-  // Reset the count and time every minute
-  if (elapsedMinutes >= 1) {
-    messageCount = 0;
-    lastResetTime = now;
-  }
-
-  return Math.round(messagesPerMinute);
+  const messagesPerMinute = messageCount;
+  messageCount = 0; // Reset the count every minute
+  return messagesPerMinute;
 }
+
+// Reset the message count every 60 seconds
+setInterval(() => {
+  messageCount = 0;
+}, 60000);
 
 module.exports = { trackMessage, getMessagesPerMinute };
