@@ -7,7 +7,7 @@ const { getMessagesPerMinute } = require('../../utils/messageCounter'); // Impor
 // Middleware to check if the user is authenticated
 const isAuthenticated = (req, res, next) => {
   if (!req.session.user) {
-    return res.redirect('/auth/discord');
+    return res.redirect('/auth/discord'); // Redirect to Discord login if user is not authenticated
   }
   next();
 };
@@ -18,7 +18,7 @@ router.get('/profile', isAuthenticated, (req, res) => {
 });
 
 // Serve bot stats
-router.get('/stats', (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
     const uptimeInSeconds = Math.floor(client.uptime / 1000); // Convert milliseconds to seconds
     const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
@@ -27,6 +27,7 @@ router.get('/stats', (req, res) => {
     const totalServers = client.guilds.cache.size;
     const messagesPerMinute = getMessagesPerMinute(); // Fetch messages per minute count
 
+    // Respond with the bot statistics
     res.json({
       servers: totalServers,
       users: totalUsers,
@@ -66,15 +67,23 @@ router.get('/api/profile', isAuthenticated, (req, res) => {
 
 // API endpoint to reset user profile
 router.post('/api/profile/reset', isAuthenticated, (req, res) => {
-  req.session.user.language = 'en'; // Reset user language or preferences
-  res.json({ message: 'Profile reset successfully' });
+  try {
+    req.session.user.language = 'en'; // Reset user language or preferences
+    res.json({ message: 'Profile reset successfully' });
+  } catch (error) {
+    console.error('Error resetting profile:', error);
+    res.status(500).json({ message: 'Failed to reset profile' });
+  }
 });
 
 // API endpoint to wipe user data
 router.post('/api/profile/wipe', isAuthenticated, (req, res) => {
   try {
     req.session.destroy(err => {
-      if (err) return res.status(500).json({ message: 'Failed to wipe data' });
+      if (err) {
+        console.error('Error wiping user data:', err);
+        return res.status(500).json({ message: 'Failed to wipe data' });
+      }
       res.json({ message: 'Data wiped successfully' });
     });
   } catch (error) {
