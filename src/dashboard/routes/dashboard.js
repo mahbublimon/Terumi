@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const router = express.Router();
 const { client } = require('../../../bot'); // Import bot client
+const { getMessagesPerMinute } = require('../../utils/messageCounter'); // Import message counter utility
 
 // Middleware to check if the user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -18,21 +19,26 @@ router.get('/profile', isAuthenticated, (req, res) => {
 
 // Serve bot stats
 router.get('/stats', (req, res) => {
-  const uptimeInSeconds = Math.floor(client.uptime / 1000); // Convert milliseconds to seconds
-  const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
-  const cachedUsers = client.users.cache.size;
-  const totalChannels = client.channels.cache.size;
-  const totalServers = client.guilds.cache.size;
-  const messagesPerMinute = getMessagesPerMinute(); // Adjust for your message count logic
+  try {
+    const uptimeInSeconds = Math.floor(client.uptime / 1000); // Convert milliseconds to seconds
+    const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
+    const cachedUsers = client.users.cache.size;
+    const totalChannels = client.channels.cache.size;
+    const totalServers = client.guilds.cache.size;
+    const messagesPerMinute = getMessagesPerMinute(); // Fetch messages per minute count
 
-  res.json({
-    servers: totalServers,
-    users: totalUsers,
-    cachedUsers: cachedUsers,
-    channels: totalChannels,
-    messagesPerMinute, // Use the calculated value here
-    uptime: uptimeInSeconds,
-  });
+    res.json({
+      servers: totalServers,
+      users: totalUsers,
+      cachedUsers: cachedUsers,
+      channels: totalChannels,
+      messagesPerMinute, // Use the calculated value here
+      uptime: uptimeInSeconds,
+    });
+  } catch (error) {
+    console.error('Error fetching bot stats:', error);
+    res.status(500).json({ message: 'Failed to load stats' });
+  }
 });
 
 // API endpoint for fetching user profile
