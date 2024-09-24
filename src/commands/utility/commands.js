@@ -1,24 +1,23 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('commands')
-    .setDescription('Get a list of all available commands'),
+    .setDescription('Get a list of all commands'),
   
   async execute(interaction) {
-    const { client } = interaction; // Access the bot client
-
-    // Fetch all commands from the client's command collection
-    const commands = client.commands.map(cmd => `\`${cmd.data.name}\` - ${cmd.data.description}`).join('\n');
-
-    // Create an embed message to list the commands
     const embed = new EmbedBuilder()
+      .setColor(Colors.Green) // Use Colors.Green for the color
       .setTitle('Available Commands')
-      .setDescription(commands || 'No commands available.')
-      .setColor('GREEN')
+      .setDescription('Here are all the available commands for the bot:')
+      .addFields(
+        { name: '/ping', value: 'Check the bot\'s latency', inline: true },
+        { name: '/help', value: 'Get help with the bot', inline: true },
+        // Add more commands here
+      )
+      .setFooter({ text: 'Use /command_name to execute a command!' })
       .setTimestamp();
 
-    // Send the embed as a response to the interaction
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    await interaction.reply({ embeds: [embed] });
   },
 };
