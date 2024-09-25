@@ -16,24 +16,21 @@ module.exports = {
     afkUsers.set(interaction.user.id, { reason, timestamp: Date.now() });
 
     const member = interaction.member;
-
-    // Correcting the reference to check bot permissions in Discord.js v14
-    const botMember = interaction.guild.members.me;  // Bot's member object
+    const botMember = interaction.guild.members.me;  // The bot's own member object
 
     // Check if bot has permission to change nickname
     if (!botMember.permissions.has('ManageNicknames')) {
       return interaction.reply('I do not have permission to change your nickname.');
     }
 
-    // Check if the bot's role is higher than the user's role
+    // Check if the bot's highest role is higher than the user's highest role
     if (member.roles.highest.position >= botMember.roles.highest.position) {
       return interaction.reply('I cannot change your nickname due to role hierarchy.');
     }
 
     try {
-      // Try to set the user's nickname and presence
+      // Try to set the user's nickname
       await member.setNickname(`[AFK] ${interaction.user.username}`, 'Set AFK status');
-      await botMember.setPresence({ status: 'dnd' }); // Set bot to 'Do Not Disturb'
       await interaction.reply(`${interaction.user.username} is now AFK: ${reason}`);
     } catch (error) {
       console.error('Error setting AFK:', error);
