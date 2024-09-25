@@ -1,6 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-
-// A map to store AFK users and their reason
 const afkUsers = new Map();
 
 module.exports = {
@@ -15,31 +13,23 @@ module.exports = {
 
   async execute(interaction) {
     const reason = interaction.options.getString('reason') || 'AFK';
+    afkUsers.set(interaction.user.id, { reason, timestamp: Date.now() });
+
     const member = interaction.member;
 
-    // Check if the user already has AFK set
-    if (afkUsers.has(member.id)) {
-      return interaction.reply({ content: 'You are already AFK!', ephemeral: true });
-    }
-
-    // Store the AFK reason and timestamp
-    afkUsers.set(member.id, { reason, timestamp: Date.now() });
-
-    // Rename the user with [AFK]
-    const originalNickname = member.nickname || member.user.username;
-    const afkNickname = `[AFK] ${originalNickname}`;
-    
-    try {
-      await member.setNickname(afkNickname, `Set AFK status: ${reason}`);
-      await member.setPresence({ status: 'dnd' }); // Set user's status to Do Not Disturb (DND)
-      
-      await interaction.reply(`${member.user.username} is now AFK: ${reason}`);
-    } catch (error) {
-      console.error('Error setting AFK:', error);
-      await interaction.reply({ content: 'Failed to set AFK status due to insufficient permissions.', ephemeral: true });
+    // Check if bot has permission to change nickname
+    if (member.guild.me.permissions.has('MANAGE_NICKNAMES')) {
+      try {
+        await member.setNickname(`[AFK] ${interaction.user.username}`, 'Set AFK status');
+        await member.setPresence({ status: 'dnd' }); // Set user to 'Do Not Disturb'
+        await interaction.reply(`${interaction.user.username} is now AFK: ${reason}`);
+      } catch (error) {
+        console.error('Error setting AFK:', error);
+        await interaction.reply('I was unable to set your AFK status due to insufficient permissions.');
+      }
+    } else {
+      await interaction.reply('I do not have permission to change your nickname.');
     }
   },
-
-  // Export the AFK users map to be used in messageCreate event or elsewhere
-  afkUsers
+  afkUsers,
 };
