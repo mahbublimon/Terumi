@@ -17,11 +17,14 @@ module.exports = {
 
     const member = interaction.member;
 
+    // Correcting the reference to check bot permissions in Discord.js v14
+    const botMember = interaction.guild.members.me;  // Updated from guild.me
+
     // Check if bot has permission to change nickname
-    if (member.guild.me.permissions.has('MANAGE_NICKNAMES')) {
+    if (botMember.permissions.has('ManageNicknames')) {
       try {
         await member.setNickname(`[AFK] ${interaction.user.username}`, 'Set AFK status');
-        await member.setPresence({ status: 'dnd' }); // Set user to 'Do Not Disturb'
+        await botMember.setPresence({ status: 'dnd' }); // Set bot to 'Do Not Disturb'
         await interaction.reply(`${interaction.user.username} is now AFK: ${reason}`);
       } catch (error) {
         console.error('Error setting AFK:', error);
