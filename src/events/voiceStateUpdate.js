@@ -9,34 +9,36 @@ module.exports = {
 
     console.log(`User ${newState.member.user.username} joined ${newState.channel.name}`);
 
-    // Check if the joined channel is the one set for creating temporary channels
-    const tempChannel = await TempChannel.findOne({ guildID: newState.guild.id });
-    if (!tempChannel) {
-      console.log('No temp channel set for this guild.');
+    // Fetch the temp channel config for this guild from the database
+    const tempChannelConfig = await TempChannel.findOne({ guildID: newState.guild.id });
+    if (!tempChannelConfig) {
+      console.log('No temp channel config found for this guild.');
       return;
     }
-    console.log(`Temp channel trigger is set to channel ID: ${tempChannel.channelID}`);
 
-    if (newState.channel.id !== tempChannel.channelID) {
-      console.log(`Joined channel ${newState.channel.id} does not match the temp channel trigger ${tempChannel.channelID}`);
+    // Ensure the joined channel matches the configured "Creator Channel"
+    if (newState.channel.id !== tempChannelConfig.channelID) {
+      console.log(`Joined channel ID ${newState.channel.id} does not match the temp channel creator ID ${tempChannelConfig.channelID}`);
       return;
     }
 
     console.log(`Creating temporary voice channel for user ${newState.member.user.username}`);
 
-    // Create a new temporary voice channel
+    // Create the temporary voice channel under the same category as the "Creator Channel"
     const guild = newState.guild;
     const user = newState.member.user;
+    const parentCategory = newState.channel.parent; // Parent category (the same as the "Creator Channel")
 
     try {
+      // Create a temporary voice channel
       const tempVoiceChannel = await guild.channels.create({
-        name: `${user.username}'s voice channel`,
+        name: `${user.username}'s Voice Channel`,
         type: ChannelType.GuildVoice,
-        parent: newState.channel.parent, // Place in the same category as the source channel
+        parent: parentCategory ? parentCategory.id : null, // Place the channel in the same category as the "Creator Channel"
         permissionOverwrites: [
           {
             id: user.id,
-            allow: ['ManageChannels', 'MoveMembers'], // Give the user temporary management permissions
+            allow: ['ManageChannels', 'MoveMembers'], // Allow the user to manage and move members in the channel
           },
           {
             id: guild.roles.everyone.id, // Default permissions for everyone
@@ -47,23 +49,22 @@ module.exports = {
 
       console.log(`Temporary channel created: ${tempVoiceChannel.name}`);
 
-      // Move the user to the new temporary channel
+      // Move the user into the new temporary voice channel
       await newState.setChannel(tempVoiceChannel);
-
       console.log(`Moved user to ${tempVoiceChannel.name}`);
 
-      // Delete the channel when it's empty
+      // Delete the temporary channel once it's empty
       const checkChannel = async () => {
         if (tempVoiceChannel.members.size === 0) {
-          console.log(`Deleting empty channel: ${tempVoiceChannel.name}`);
+          console.log(`Deleting empty temporary channel: ${tempVoiceChannel.name}`);
           await tempVoiceChannel.delete();
         }
       };
 
-      // Check if the channel is empty after 5 seconds
-      setTimeout(checkChannel, 5000);
+      // Set a timeout to check if the channel is empty after 30 seconds
+      setTimeout(checkChannel, 30000); // 30 seconds
     } catch (error) {
-      console.error('Error creating temp voice channel:', error);
+      console.error('Error creating or managing temporary voice channel:', error);
     }
   },
 };
