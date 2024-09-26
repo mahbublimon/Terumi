@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
+const { SlashCommandBuilder, PermissionsBitField, ChannelType } = require('discord.js');
 const TempChannel = require('../../models/TempChannel');
 
 module.exports = {
@@ -15,8 +15,8 @@ module.exports = {
     const channel = interaction.options.getChannel('channel');
 
     // Ensure the selected channel is a voice channel
-    if (channel.type !== 'GUILD_VOICE') {
-      return interaction.reply({ content: 'Please select a voice channel.', ephemeral: true });
+    if (channel.type !== ChannelType.GuildVoice) { // Check if it is a voice channel
+      return interaction.reply({ content: 'Please select a valid voice channel.', ephemeral: true });
     }
 
     // Check for admin permissions
