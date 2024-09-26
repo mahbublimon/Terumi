@@ -1,32 +1,52 @@
-const TempChannel = require('../models/TempChannel');
-const { createTempChannel, deleteTempChannel } = require('../utils/tempChannelManager');
+const { ChannelType } = require('discord.js');
+const TempChannel = require('../models/TempChannel'); // Import the TempChannel model
 
 module.exports = {
   name: 'voiceStateUpdate',
   async execute(oldState, newState) {
-    // If the user is just moving within voice channels (ignoring leave/join)
-    if (oldState.channelId === newState.channelId) return;
-
-    const guild = newState.guild;
-    const member = newState.member;
-
     // Check if the user joined a voice channel
-    if (newState.channelId) {
-      // Get the designated temp channel for this guild
-      const tempChannel = await TempChannel.findOne({ guildID: guild.id });
+    if (!newState.channel || newState.channel.type !== ChannelType.GuildVoice) return;
 
-      if (tempChannel && newState.channelId === tempChannel.channelID) {
-        // User joined the temp channel creator, create a new personal voice channel
-        await createTempChannel(guild, member);
-      }
-    }
+    // Check if the joined channel is the one set for creating temporary channels
+    const tempChannel = await TempChannel.findOne({ guildID: newState.guild.id });
+    if (!tempChannel || newState.channel.id !== tempChannel.channelID) return;
 
-    // Check if the user left a temp voice channel
-    if (oldState.channelId && oldState.channel) {
-      if (oldState.channel.members.size === 0 && oldState.channel.name.endsWith("'s voice")) {
-        // No users left, delete the channel
-        await deleteTempChannel(oldState.channel);
-      }
+    // Create a new temporary voice channel
+    const guild = newState.guild;
+    const user = newState.member.user;
+    
+    try {
+      const tempVoiceChannel = await guild.channels.create({
+        name: `${user.username}'s voice channel`,
+        type: ChannelType.GuildVoice,
+        parent: newState.channel.parent, // Place in the same category as the source channel
+        permissionOverwrites: [
+          {
+            id: user.id,
+            allow: ['ManageChannels', 'MoveMembers'], // Give the user temporary management permissions
+          },
+          {
+            id: guild.roles.everyone.id, // Default permissions for everyone
+            allow: ['Connect'],
+          },
+        ],
+      });
+
+      // Move the user to the new temporary channel
+      await newState.setChannel(tempVoiceChannel);
+
+      // Delete the channel when it's empty
+      tempVoiceChannel.setParent(newState.channel.parent); // Set same category
+      const checkChannel = async () => {
+        if (tempVoiceChannel.members.size === 0) {
+          await tempVoiceChannel.delete();
+        }
+      };
+
+      // Wait for a few seconds before checking if the channel is empty
+      setTimeout(checkChannel, 5000);
+    } catch (error) {
+      console.error('Error creating temp voice channel:', error);
     }
-  }
+  },
 };
