@@ -7,14 +7,27 @@ module.exports = {
     // Check if the user joined a voice channel
     if (!newState.channel || newState.channel.type !== ChannelType.GuildVoice) return;
 
+    console.log(`User ${newState.member.user.username} joined ${newState.channel.name}`);
+
     // Check if the joined channel is the one set for creating temporary channels
     const tempChannel = await TempChannel.findOne({ guildID: newState.guild.id });
-    if (!tempChannel || newState.channel.id !== tempChannel.channelID) return;
+    if (!tempChannel) {
+      console.log('No temp channel set for this guild.');
+      return;
+    }
+    console.log(`Temp channel trigger is set to channel ID: ${tempChannel.channelID}`);
+
+    if (newState.channel.id !== tempChannel.channelID) {
+      console.log(`Joined channel ${newState.channel.id} does not match the temp channel trigger ${tempChannel.channelID}`);
+      return;
+    }
+
+    console.log(`Creating temporary voice channel for user ${newState.member.user.username}`);
 
     // Create a new temporary voice channel
     const guild = newState.guild;
     const user = newState.member.user;
-    
+
     try {
       const tempVoiceChannel = await guild.channels.create({
         name: `${user.username}'s voice channel`,
@@ -32,18 +45,22 @@ module.exports = {
         ],
       });
 
+      console.log(`Temporary channel created: ${tempVoiceChannel.name}`);
+
       // Move the user to the new temporary channel
       await newState.setChannel(tempVoiceChannel);
 
+      console.log(`Moved user to ${tempVoiceChannel.name}`);
+
       // Delete the channel when it's empty
-      tempVoiceChannel.setParent(newState.channel.parent); // Set same category
       const checkChannel = async () => {
         if (tempVoiceChannel.members.size === 0) {
+          console.log(`Deleting empty channel: ${tempVoiceChannel.name}`);
           await tempVoiceChannel.delete();
         }
       };
 
-      // Wait for a few seconds before checking if the channel is empty
+      // Check if the channel is empty after 5 seconds
       setTimeout(checkChannel, 5000);
     } catch (error) {
       console.error('Error creating temp voice channel:', error);
