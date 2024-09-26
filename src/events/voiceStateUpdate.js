@@ -30,6 +30,13 @@ module.exports = {
     const parentCategory = newState.channel.parent; // Parent category (the same as the "Creator Channel")
 
     try {
+      // Log parent category info
+      if (parentCategory) {
+        console.log(`Parent category found: ${parentCategory.name}`);
+      } else {
+        console.log('No parent category found.');
+      }
+
       // Create a temporary voice channel
       const tempVoiceChannel = await guild.channels.create({
         name: `${user.username}'s Voice Channel`,
@@ -53,6 +60,13 @@ module.exports = {
       await newState.setChannel(tempVoiceChannel);
       console.log(`Moved user to ${tempVoiceChannel.name}`);
 
+      // Check if the user is successfully moved to the new channel
+      if (newState.channel.id === tempVoiceChannel.id) {
+        console.log('User successfully moved to temporary channel.');
+      } else {
+        console.log('User was not moved to the temporary channel.');
+      }
+
       // Delete the temporary channel once it's empty
       const checkChannel = async () => {
         if (tempVoiceChannel.members.size === 0) {
@@ -65,6 +79,11 @@ module.exports = {
       setTimeout(checkChannel, 30000); // 30 seconds
     } catch (error) {
       console.error('Error creating or managing temporary voice channel:', error);
+
+      // Check if the error is related to permissions
+      if (error.code === 50013) {
+        console.error('Bot is missing the required permissions.');
+      }
     }
   },
 };
