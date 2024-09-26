@@ -1,8 +1,14 @@
-const { Schema, model } = require('mongoose');
+const mongoose = require('mongoose');
 
-const tempChannelSchema = new Schema({
-  guildID: { type: String, required: true },
-  channelID: { type: String, required: true }, // The channel that triggers temp voice creation
+const tempChannelSchema = new mongoose.Schema({
+  guildID: {
+    type: String,
+    required: true,
+  },
+  channelID: {
+    type: String,
+    required: true,
+  },
 });
 
-module.exports = model('TempChannel', tempChannelSchema);
+module.exports = mongoose.model('TempChannel', tempChannelSchema);
