@@ -1,41 +1,35 @@
-const { SlashCommandBuilder, PermissionsBitField, ChannelType } = require('discord.js');
-const TempChannel = require('../../models/TempChannel');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const TempChannel = require('../../models/TempChannel'); // Assuming you have a TempChannel model
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('settempchannel')
-    .setDescription('Set the channel for creating temporary voice channels')
+    .setDescription('Set a channel to be used for creating temporary voice channels.')
     .addChannelOption(option =>
       option.setName('channel')
-        .setDescription('The voice channel to use for creating temp voice channels')
+        .setDescription('The voice channel to use as the creator for temporary channels')
         .setRequired(true)
-    ),
-
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels), // Only users with Manage Channels permission can use this command
   async execute(interaction) {
     const channel = interaction.options.getChannel('channel');
 
-    // Ensure the selected channel is a voice channel
-    if (channel.type !== ChannelType.GuildVoice) { // Check if it is a voice channel
-      return interaction.reply({ content: 'Please select a valid voice channel.', ephemeral: true });
-    }
-
-    // Check for admin permissions
-    if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
-      return interaction.reply({ content: 'You do not have permission to set the temporary voice channel.', ephemeral: true });
+    // Ensure it's a voice channel
+    if (channel.type !== 'GUILD_VOICE') {
+      return interaction.reply('Please select a valid voice channel.');
     }
 
     try {
-      // Save or update the temp channel in the database
+      // Save or update the temporary channel creator in the database
       await TempChannel.findOneAndUpdate(
         { guildID: interaction.guild.id },
         { channelID: channel.id },
-        { upsert: true, new: true }
+        { upsert: true }
       );
-
-      return interaction.reply(`Temporary voice channel creator set to ${channel.name}`);
+      await interaction.reply(`Temporary voice channel creator set to ${channel.name}.`);
     } catch (error) {
       console.error('Error setting temp channel:', error);
-      return interaction.reply({ content: 'Failed to set the temporary voice channel.', ephemeral: true });
+      await interaction.reply('There was an error setting the temporary voice channel.');
     }
-  }
+  },
 };
