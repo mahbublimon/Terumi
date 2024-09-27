@@ -1,8 +1,9 @@
+// src/dashboard/routes/dashboard.js
 const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const router = express.Router();
-const { client } = require('../../../bot'); // Assuming bot.js is in the parent directory
+const { client } = require('../../../bot'); // Adjust path based on your file structure
 
 // Redirect users to Discord OAuth2 login
 router.get('/auth/discord', (req, res) => {
@@ -57,10 +58,10 @@ router.get('/auth/logout', (req, res) => {
   });
 });
 
-// API route for fetching Shard and Status Information
+// Shard information and bot status route
 router.get('/bot-status', async (req, res) => {
   // Only allow bot owner to access this page
-  const botOwnerID = process.env.BOT_OWNER_ID; // Store your Discord ID in the .env file
+  const botOwnerID = process.env.BOT_OWNER_ID;
   if (req.session.user.id !== botOwnerID) return res.status(403).send('Access denied');
 
   try {
