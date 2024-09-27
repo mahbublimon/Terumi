@@ -3,220 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Terumi Premium</title>
-  <link rel="stylesheet" href="/styles.css"> <!-- Link to the external stylesheet -->
-  <style>
-    body {
-      font-family: 'Times New Roman', serif;;
-      margin: 0;
-      padding: 0;
-      background-color: #1A1A1A;
-      color: #FFFFFF; /* White text for readability on dark background */
-    }
-
-    header {
-      background-color: #333333; /* Darker header for contrast */
-      padding: 20px;
-      color: #FFFFFF;
-      text-align: center;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 1200px;
-      margin: 40px auto;
-    }
-
-    /* Pricing Plans Section */
-    .pricing-table {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .plan {
-      background-color: #2E2E2E; /* Darker box for contrast */
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Softer shadow */
-      width: calc(33.333% - 20px);
-      margin: 20px 0;
-      padding: 20px;
-      text-align: center;
-      box-sizing: border-box;
-    }
-
-    .plan h2 {
-      font-size: 24px;
-      color: #FFFFFF; /* White for readability */
-    }
-
-    .plan h3 {
-      font-size: 36px;
-      margin: 20px 0;
-      color: #4CAF50; /* Keep the green for pricing */
-    }
-
-    .plan ul {
-      list-style-type: none;
-      padding: 0;
-      font-size: 16px;
-      color: #CCCCCC; /* Light gray for list items */
-    }
-
-    .plan ul li {
-      padding: 10px;
-    }
-
-    .plan button {
-      background-color: #4CAF50; /* Keep the green button */
-      color: #FFFFFF;
-      border: none;
-      padding: 10px 20px;
-      font-size: 18px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-
-    .plan button:hover {
-      background-color: #45a049; /* Darker green on hover */
-    }
-
-    /* Key Features Section */
-    .features {
-      margin: 40px 0;
-      text-align: center;
-    }
-
-    .features h2 {
-      font-size: 30px;
-      color: #FFFFFF;
-      margin-bottom: 20px;
-    }
-
-    .features ul {
-      font-size: 18px;
-      color: #CCCCCC; /* Light gray for features text */
-      list-style-type: none;
-      padding: 0;
-    }
-
-    .features ul li {
-      margin: 10px 0;
-    }
-
-    /* Footer */
-    .footer {
-      background-color: #333333; /* Dark footer */
-      color: #FFFFFF;
-      text-align: center;
-      padding: 10px;
-      margin-top: 40px;
-    }
-
-    .footer nav ul {
-      list-style: none;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 10px;
-    }
-
-    .footer nav ul li {
-      display: inline;
-    }
-
-    .footer nav ul li a {
-      color: #FFFFFF;
-      text-decoration: none;
-    }
-
-    .footer nav ul li a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
+  <title>Terumi - Premium Plans</title>
 </head>
 <body>
-
-<header>
-  <h1>Unlock Terumi's Full Potential with Premium</h1>
-</header>
-
-<div class="container">
-  <!-- Pricing Plans -->
-  <div class="pricing-table">
-    <!-- Standard Plan -->
-    <div class="plan">
-      <h2>Standard</h2>
-      <h3>$0 / month</h3>
-      <ul>
-        <li>Access to all modules</li>
-        <li>Refundable for 14 days</li>
-        <li>Access to all premium features</li>
-        <li>Customize your app</li>
-      </ul>
-      <button>Select Standard</button>
+  <header>
+    <div class="nav-top">
+      <img src="terumi.png" alt="Terumi Logo" class="logo">
+      <nav class="nav-top-right">
+        <a href="/premium">Premium</a>
+        <a href="/login">Login with Discord</a>
+        <a href="/status">Status</a>
+        <a href="/dashboard">Dashboard</a>
+      </nav>
     </div>
-
-    <!-- Premium Plan -->
-    <div class="plan">
-      <h2>Premium</h2>
-      <h3>$7 / month</h3>
-      <ul>
-        <li>Access to all modules</li>
-        <li>Refundable for 14 days</li>
-        <li>Access to all premium features</li>
-        <li>Customize your app</li>
-      </ul>
-      <button>Select Premium</button>
-    </div>
-
-    <!-- Custom Plan -->
-    <div class="plan">
-      <h2>Custom</h2>
-      <h3>$10 / month</h3>
-      <ul>
-        <li>Access to all modules</li>
-        <li>Refundable for 14 days</li>
-        <li>Access to all premium features</li>
-        <li>Customize your app</li>
-      </ul>
-      <button>Select Custom</button>
+  </header>
+  
+  <div class="main-content">
+    <h1>Premium Plans</h1>
+    <div class="plans">
+      <div class="plan">
+        <h2>Basic</h2>
+        <p>$5/month</p>
+        <button>Purchase</button>
+      </div>
+      <div class="plan">
+        <h2>Pro</h2>
+        <p>$10/month</p>
+        <button>Purchase</button>
+      </div>
+      <div class="plan">
+        <h2>Ultimate</h2>
+        <p>$20/month</p>
+        <button>Purchase</button>
+      </div>
     </div>
   </div>
 
-  <!-- Key Features Section -->
-  <div class="features">
-    <h2>Premium Features</h2>
-    <ul>
-      <li>Customization: Embed colors, embedded messages, ad-free app</li>
-      <li>Levels: Multipliers, live leaderboards</li>
-      <li>Server Protection: Anti-advertisement, anti-raid</li>
-      <li>Giveaways: Custom countdown timers, ad-free</li>
-      <li>Vanity URL: Custom Discord URL</li>
-      <li>Music: High-quality music with advanced commands</li>
-      <li>Moderation: Advanced controls, moderation logs, ban appeals</li>
-      <li>Logging: Detailed server logs for voice, invites, and emojis</li>
-      <li>Games: In-game stats, commands, and slots</li>
-      <li>Statistics: Live server statistics and analytics</li>
-      <li>Support: Early access to new features, sneak peeks, and premium support</li>
-      <li>And much more: Unlock custom commands, reaction roles, and extra perks</li>
-    </ul>
-  </div>
-</div>
-
-<!-- Footer -->
-<div class="footer">
-  <nav>
-    <ul>
-      <li><a href="/termsofservice.html">Terms of Service</a></li>
-      <li><a href="/privacypolicy.html">Privacy Policy</a></li>
-    </ul>
-  </nav>
-  <p>© 2024 Terumi. All rights reserved.</p>
-</div>
-
+  <footer>
+    <p>Copyright &copy; 2024 Terumi. <a href="/terms">Terms of Service</a> | <a href="/privacy">Privacy Policy</a></p>
+  </footer>
 </body>
 </html>
