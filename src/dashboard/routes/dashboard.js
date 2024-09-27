@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const router = express.Router();
+const { client } = require('../../../bot'); // Assuming bot.js is in the parent directory
 
 // Redirect users to Discord OAuth2 login
 router.get('/auth/discord', (req, res) => {
@@ -55,3 +56,28 @@ router.get('/auth/logout', (req, res) => {
     res.redirect('/');
   });
 });
+
+// API route for fetching Shard and Status Information
+router.get('/bot-status', async (req, res) => {
+  // Only allow bot owner to access this page
+  const botOwnerID = process.env.BOT_OWNER_ID; // Store your Discord ID in the .env file
+  if (req.session.user.id !== botOwnerID) return res.status(403).send('Access denied');
+
+  try {
+    const shards = client.ws.shards.map(shard => ({
+      id: shard.id,
+      status: shard.status,
+      ping: shard.ping,
+    }));
+
+    res.json({
+      shards,
+      isOnline: client.ws.status === 0 ? 'Online' : 'Offline',
+    });
+  } catch (error) {
+    console.error('Error fetching bot status:', error);
+    res.status(500).json({ message: 'Failed to fetch bot status' });
+  }
+});
+
+module.exports = router;
