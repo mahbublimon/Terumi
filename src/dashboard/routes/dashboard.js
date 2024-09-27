@@ -1,9 +1,9 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
-const { client } = require('../../../bot'); // Import the client
+const { client } = require('../../../bot'); 
 
-// Redirect users to Discord OAuth2 login
+// Discord OAuth2 login route
 router.get('/auth/discord', (req, res) => {
   const clientId = process.env.DISCORD_CLIENT_ID;
   const redirectUri = encodeURIComponent(process.env.REDIRECT_URI);
@@ -59,7 +59,7 @@ router.get('/auth/logout', (req, res) => {
 // Shard information and bot status route
 router.get('/bot-status', async (req, res) => {
   const botOwnerID = process.env.BOT_OWNER_ID;
-  if (req.session.user.id !== botOwnerID) return res.status(403).send('Access denied');
+  if (!req.session.user || req.session.user.id !== botOwnerID) return res.status(403).send('Access denied');
 
   try {
     const shards = client.ws.shards.map(shard => ({
@@ -76,6 +76,10 @@ router.get('/bot-status', async (req, res) => {
     console.error('Error fetching bot status:', error);
     res.status(500).json({ message: 'Failed to fetch bot status' });
   }
+});
+
+router.get('/status', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/status.html'));
 });
 
 module.exports = router;
