@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Terumi Bot Status</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .status-operational {
+      color: green;
+    }
+    .status-partial {
+      color: yellow;
+    }
+    .status-outage {
+      color: red;
+    }
+  </style>
 </head>
 <body>
   <div class="navbar">
@@ -20,17 +31,7 @@
 
   <div class="status-container">
     <h1>Bot Status</h1>
-    <div id="status-summary">
-      <!-- Shard and cluster status will be dynamically updated here -->
-    </div>
-
-    <!-- Server lookup by ID -->
-    <div class="lookup-container">
-      <h3>Look up your server by ID</h3>
-      <input type="text" id="server-id-input" placeholder="Enter Server ID">
-      <button id="lookup-btn">Look Up</button>
-      <div id="server-status"></div>
-    </div>
+    <div id="services"></div>
   </div>
 
   <footer>
@@ -38,38 +39,41 @@
   </footer>
 
   <script>
-    // Fetch bot status from server
-    fetch('/bot-status').then(response => response.json()).then(data => {
-      const statusSummary = document.getElementById('status-summary');
-      statusSummary.innerHTML = `
-        <h2>Service: Terumi</h2>
-        <p>Status: <span class="${data.serviceStatus.toLowerCase()}">${data.serviceStatus}</span></p>
-        <p>${data.totalShards} / ${data.totalShards} shards</p>
-        <p>${data.totalProblematicShards} / ${data.totalShards} clusters have problems.</p>
-      `;
+    // Fetch status from the backend
+    fetch('/bot-status')
+      .then(response => response.json())
+      .then(data => {
+        const servicesContainer = document.getElementById('services');
+        servicesContainer.innerHTML = '';
 
-      // Apply dynamic color based on status
-      const serviceStatusElement = document.querySelector('.status-container span');
-      if (data.serviceStatus === 'Operational') {
-        serviceStatusElement.style.color = 'green';
-      } else if (data.serviceStatus === 'Partial Outage') {
-        serviceStatusElement.style.color = 'yellow';
-      } else if (data.serviceStatus === 'Major Outage') {
-        serviceStatusElement.style.color = 'red';
-      }
-    });
+        data.services.forEach(service => {
+          // Determine the status based on outages
+          let statusText = 'Operational';
+          let statusClass = 'status-operational';
+          
+          if (service.outages > 0) {
+            if (service.outages / service.totalClusters < 0.5) {
+              statusText = 'Partial Outage';
+              statusClass = 'status-partial';
+            } else {
+              statusText = 'Major Outage';
+              statusClass = 'status-outage';
+            }
+          }
 
-    // Server lookup functionality
-    document.getElementById('lookup-btn').addEventListener('click', () => {
-      const serverId = document.getElementById('server-id-input').value;
-      if (serverId) {
-        fetch(`/api/server-status/${serverId}`).then(response => response.json()).then(data => {
-          document.getElementById('server-status').textContent = data.status;
-        }).catch(err => {
-          document.getElementById('server-status').textContent = 'Server not found or invalid ID.';
+          const serviceElement = document.createElement('div');
+          serviceElement.innerHTML = `
+            <h2>Service: ${service.name}</h2>
+            <p><strong>Status:</strong> <span class="${statusClass}">${statusText}</span></p>
+            <p>${service.operationalShards} / ${service.totalShards} shards</p>
+            <p>${service.outages} / ${service.totalClusters} clusters have problems.</p>
+          `;
+          servicesContainer.appendChild(serviceElement);
         });
-      }
-    });
+      })
+      .catch(error => {
+        console.error('Error fetching service status:', error);
+      });
   </script>
 </body>
 </html>
