@@ -30,15 +30,18 @@
 
   <script>
     fetch('/bot-status').then(response => response.json()).then(data => {
-      const shardsDiv = document.getElementById('shards');
+      const shardStatusDiv = document.getElementById('shard-status');
+      shardStatusDiv.innerHTML = '';
+  
       data.shards.forEach(shard => {
-        const shardStatus = document.createElement('div');
-        shardStatus.textContent = `Shard ${shard.id}: ${shard.status} (Ping: ${shard.ping}ms)`;
-        shardsDiv.appendChild(shardStatus);
+        const shardInfo = document.createElement('div');
+        shardInfo.textContent = `Shard ${shard.id}: ${shard.status} (Ping: ${shard.ping}ms)`;
+        shardStatusDiv.appendChild(shardInfo);
       });
-
-      const statusDiv = document.getElementById('status');
-      statusDiv.textContent = `Bot Status: ${data.isOnline}`;
+  
+      const botStatus = document.createElement('div');
+      botStatus.textContent = `Bot Status: ${data.isOnline}`;
+      shardStatusDiv.appendChild(botStatus);
     });
   </script>
 </body>
