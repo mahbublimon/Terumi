@@ -90,3 +90,30 @@ footer {
 footer p {
   color: #ccc;
 }
+.status-container span.operational {
+  color: green;
+}
+
+.status-container span.partial-outage {
+  color: yellow;
+}
+
+.status-container span.major-outage {
+  color: red;
+}
+
+/* Additional styles for the layout */
+.lookup-container {
+  margin-top: 20px;
+}
+
+input#server-id-input {
+  padding: 10px;
+  font-size: 1em;
+}
+
+button#lookup-btn {
+  padding: 10px 20px;
+  margin-left: 10px;
+  font-size: 1em;
+}
