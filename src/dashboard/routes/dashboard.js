@@ -22,7 +22,6 @@ router.get('/auth/discord/callback', async (req, res) => {
   }
 
   try {
-    // Exchange authorization code for access token
     const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID,
       client_secret: process.env.DISCORD_CLIENT_SECRET,
@@ -35,7 +34,7 @@ router.get('/auth/discord/callback', async (req, res) => {
 
     const { access_token } = tokenResponse.data;
 
-    // Fetch user info from Discord API using the access token
+    // Fetch user info from Discord API
     const userResponse = await axios.get('https://discord.com/api/users/@me', {
       headers: { Authorization: `Bearer ${access_token}` },
     });
@@ -43,7 +42,7 @@ router.get('/auth/discord/callback', async (req, res) => {
     const user = userResponse.data;
     req.session.user = user; // Store user data in session
 
-    res.redirect('/dashboard'); // Redirect to the dashboard after login
+    res.redirect('/dashboard');
   } catch (error) {
     console.error('Error during Discord OAuth2 callback:', error.message);
     res.status(500).send('Authentication failed');
@@ -61,11 +60,7 @@ router.get('/auth/logout', (req, res) => {
 // Shard information and bot status route
 router.get('/bot-status', async (req, res) => {
   const botOwnerID = process.env.BOT_OWNER_ID;
-
-  // Check if the current user is the bot owner
-  if (!req.session.user || req.session.user.id !== botOwnerID) {
-    return res.status(403).send('Access denied');
-  }
+  if (!req.session.user || req.session.user.id !== botOwnerID) return res.status(403).send('Access denied');
 
   try {
     const shards = client.ws.shards.map(shard => ({
@@ -74,5 +69,19 @@ router.get('/bot-status', async (req, res) => {
       ping: shard.ping,
     }));
 
-    // Check if the bot is online
-    const isOnline = client.ws.status ===
+    res.json({
+      shards,
+      isOnline: client.ws.status === 0 ? 'Online' : 'Offline',
+    });
+  } catch (error) {
+    console.error('Error fetching bot status:', error);
+    res.status(500).json({ message: 'Failed to fetch bot status' });
+  }
+});
+
+// Serve the status page HTML
+router.get('/status', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/status.html')); // Use path to serve the HTML file
+});
+
+module.exports = router;
