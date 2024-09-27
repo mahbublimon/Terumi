@@ -1,152 +1,54 @@
-/* Base Styles */
 body {
   background-color: #1A1A1A;
-  color: #FFFFFF;
-  font-family: 'Times New Roman', serif;
-  margin: 0;
-  padding: 0;
+  font-family: "Times New Roman", serif;
+  color: #FFF;
 }
 
-/* Header */
-.header {
-  background-color: #333;
-  padding: 20px;
-  text-align: center;
-}
-
-.header .container {
+header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  padding: 20px;
+  background-color: #333;
 }
 
-.header img.bot-logo {
-  width: 140px;
-  height: 40px;
+.logo {
+  height: 50px;
 }
 
-.header nav ul {
-  list-style-type: none;
-  padding: 0;
+.nav-top-right a {
+  margin-left: 15px;
+  text-decoration: none;
+  color: #FFF;
 }
 
-.header nav ul li {
-  display: inline;
-  margin: 0 10px;
+.main-content {
+  text-align: center;
+  padding: 50px;
 }
 
-.header nav ul li a {
-  color: #FFFFFF;
+.hero-logo {
+  width: 200px;
+  height: auto;
+}
+
+.buttons .btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  display: inline-block;
+  margin: 10px;
   text-decoration: none;
 }
 
-.header nav ul li a:hover {
-  text-decoration: underline;
-}
-
-/* Dashboard Content */
-.dashboard {
-  background-color: #333;
+footer {
   padding: 20px;
-  border-radius: 10px;
-  margin: 40px auto;
-  max-width: 800px;
-  text-align: center;
-}
-
-h2 {
-  font-size: 2em;
-  margin-bottom: 20px;
-}
-
-/* Stats Box */
-.stats-box {
-  background-color: #222;
-  padding: 20px;
-  border-radius: 10px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two columns */
-  gap: 20px;
-  align-items: center;
-  justify-items: center;
-}
-
-.stats-row {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.stats-row p {
-  font-size: 1.2em;
-  margin: 10px 0;
-}
-
-.stats-row span {
-  font-size: 1.1em;
-  font-weight: bold;
-  color: #FFD700;
-}
-
-/* Footer */
-.footer {
   background-color: #333;
-  padding: 10px;
   text-align: center;
 }
 
-.footer nav ul {
-  list-style-type: none;
-  padding: 0;
-  margin-bottom: 10px;
-}
-
-.footer nav ul li {
-  display: inline;
-  margin: 0 10px;
-}
-
-.footer nav ul li a {
-  color: #FFFFFF;
-  text-decoration: none;
-}
-
-.footer nav ul li a:hover {
-  text-decoration: underline;
-}
-
-.footer p {
-  margin: 0;
-  font-size: 0.9em;
-  color: #FFD700;
-}
-/* Profile Page Styles */
-.profile-container {
-  background-color: #333;
-  padding: 20px;
-  border-radius: 10px;
-  margin: 40px auto;
-  max-width: 600px;
+.server {
+  margin: 10px;
   text-align: center;
-}
-
-.profile-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.profile-avatar {
-  border-radius: 50%;
-  margin-bottom: 15px;
-  width: 100px;
-  height: 100px;
-}
-
-/* Footer */
-.footer {
-  background-color: #1A1A1A;
-  padding: 10px;
-  text-align: center;
+  color: white;
 }
