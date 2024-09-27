@@ -20,8 +20,10 @@
 
   <div class="status-container">
     <h1>Bot Status</h1>
-    <div id="shards"></div>
-    <div id="status"></div>
+    <div id="shard-status"></div>
+    <div id="bot-status"></div>
+    <div id="total-servers"></div>
+    <div id="invite-button"></div>
   </div>
 
   <footer>
@@ -32,16 +34,27 @@
     fetch('/bot-status').then(response => response.json()).then(data => {
       const shardStatusDiv = document.getElementById('shard-status');
       shardStatusDiv.innerHTML = '';
-  
+
       data.shards.forEach(shard => {
         const shardInfo = document.createElement('div');
         shardInfo.textContent = `Shard ${shard.id}: ${shard.status} (Ping: ${shard.ping}ms)`;
         shardStatusDiv.appendChild(shardInfo);
       });
-  
-      const botStatus = document.createElement('div');
-      botStatus.textContent = `Bot Status: ${data.isOnline}`;
-      shardStatusDiv.appendChild(botStatus);
+
+      const botStatusDiv = document.getElementById('bot-status');
+      botStatusDiv.textContent = `Bot Status: ${data.isOnline ? 'Online' : 'Offline'}`;
+
+      const totalServersDiv = document.getElementById('total-servers');
+      totalServersDiv.textContent = `Total Servers: ${data.totalServers}`;
+
+      // Create a button to invite the bot
+      const inviteButton = document.createElement('button');
+      inviteButton.textContent = 'Invite Terumi to Your Server';
+      inviteButton.onclick = () => {
+        window.location.href = 'https://discord.com/oauth2/authorize?client_id=' + data.clientId + '&scope=bot&permissions=8';
+      };
+
+      document.getElementById('invite-button').appendChild(inviteButton);
     });
   </script>
 </body>
