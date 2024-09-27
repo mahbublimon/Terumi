@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terumi Bot Status</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="navbar">
+    <img src="/terumi.png" alt="Terumi" class="logo">
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/status">Status</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/premium">Premium</a></li>
+      <li><a href="/auth/discord" id="login">Login</a></li>
+    </ul>
+  </div>
+
+  <div class="status-container">
+    <h1>Bot Status</h1>
+    <div id="shards"></div>
+    <div id="status"></div>
+  </div>
+
+  <footer>
+    <p>&copy; Terumi Bot 2024. <a href="/privacypolicy">Privacy Policy</a> | <a href="/termsofservice">Terms of Service</a></p>
+  </footer>
+
+  <script>
+    fetch('/bot-status').then(response => response.json()).then(data => {
+      const shardsDiv = document.getElementById('shards');
+      data.shards.forEach(shard => {
+        const shardStatus = document.createElement('div');
+        shardStatus.textContent = `Shard ${shard.id}: ${shard.status} (Ping: ${shard.ping}ms)`;
+        shardsDiv.appendChild(shardStatus);
+      });
+
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = `Bot Status: ${data.isOnline}`;
+    });
+  </script>
+</body>
+</html>
