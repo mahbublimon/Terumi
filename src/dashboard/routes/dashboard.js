@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const path = require('path'); // Import the path module
 const router = express.Router();
 const { client } = require('../../../bot'); 
 
@@ -78,8 +79,9 @@ router.get('/bot-status', async (req, res) => {
   }
 });
 
+// Serve the status page HTML
 router.get('/status', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/status.html'));
+  res.sendFile(path.join(__dirname, '../public/status.html')); // Use path to serve the HTML file
 });
 
 module.exports = router;
