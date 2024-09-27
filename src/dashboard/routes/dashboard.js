@@ -60,18 +60,49 @@ router.get('/auth/logout', (req, res) => {
 // Shard information and bot status route
 router.get('/bot-status', async (req, res) => {
   const botOwnerID = process.env.BOT_OWNER_ID;
-  if (!req.session.user || req.session.user.id !== botOwnerID) return res.status(403).send('Access denied');
+  if (!req.session.user || req.session.user.id !== botOwnerID) {
+    return res.status(403).send('Access denied');
+  }
 
   try {
-    const shards = client.ws.shards.map(shard => ({
+    const terumiShards = client.ws.shards.map(shard => ({
       id: shard.id,
       status: shard.status,
       ping: shard.ping,
     }));
 
+    // Assume that Premium shards are managed similarly (adjust if Premium bot is separate)
+    const premiumShards = client.ws.shards.map(shard => ({
+      id: shard.id,
+      status: shard.status,
+      ping: shard.ping,
+    }));
+
+    const terumiClusters = terumiShards.length; // Assuming 1 shard per cluster
+    const terumiShardsOperational = terumiShards.filter(shard => shard.status === 'ready').length;
+    const terumiOutages = terumiClusters - terumiShardsOperational;
+
+    const premiumClusters = premiumShards.length;
+    const premiumShardsOperational = premiumShards.filter(shard => shard.status === 'ready').length;
+    const premiumOutages = premiumClusters - premiumShardsOperational;
+
     res.json({
-      shards,
-      isOnline: client.ws.status === 0 ? 'Online' : 'Offline',
+      services: [
+        {
+          name: 'Terumi',
+          totalShards: terumiShards.length,
+          totalClusters: terumiClusters,
+          operationalShards: terumiShardsOperational,
+          outages: terumiOutages
+        },
+        {
+          name: 'Premium',
+          totalShards: premiumShards.length,
+          totalClusters: premiumClusters,
+          operationalShards: premiumShardsOperational,
+          outages: premiumOutages
+        }
+      ]
     });
   } catch (error) {
     console.error('Error fetching bot status:', error);
@@ -81,7 +112,7 @@ router.get('/bot-status', async (req, res) => {
 
 // Serve the status page HTML
 router.get('/status', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/status.html')); // Use path to serve the HTML file
+  res.sendFile(path.join(__dirname, '../public/status.html')); // Serve the HTML file
 });
 
 module.exports = router;
