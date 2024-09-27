@@ -51,4 +51,42 @@ footer {
   margin: 10px;
   text-align: center;
   color: white;
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  padding: 1rem;
+}
+
+.navbar .logo {
+  height: 50px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+}
+
+.nav-links li {
+  margin: 0 1rem;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+}
+
+.status-container {
+  padding: 2rem;
+  text-align: center;
+}
+
+footer {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+footer p {
+  color: #ccc;
 }
