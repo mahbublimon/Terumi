@@ -20,8 +20,17 @@
 
   <div class="status-container">
     <h1>Bot Status</h1>
-    <div id="shards"></div>
-    <div id="status"></div>
+    <div id="status-summary">
+      <!-- Shard and cluster status will be dynamically updated here -->
+    </div>
+
+    <!-- Server lookup by ID -->
+    <div class="lookup-container">
+      <h3>Look up your server by ID</h3>
+      <input type="text" id="server-id-input" placeholder="Enter Server ID">
+      <button id="lookup-btn">Look Up</button>
+      <div id="server-status"></div>
+    </div>
   </div>
 
   <footer>
@@ -29,19 +38,37 @@
   </footer>
 
   <script>
+    // Fetch bot status from server
     fetch('/bot-status').then(response => response.json()).then(data => {
-      const shardStatusDiv = document.getElementById('shards');
-      shardStatusDiv.innerHTML = '';
-  
-      data.shards.forEach(shard => {
-        const shardInfo = document.createElement('div');
-        shardInfo.textContent = `Shard ${shard.id}: ${shard.status} (Ping: ${shard.ping}ms)`;
-        shardStatusDiv.appendChild(shardInfo);
-      });
-  
-      const botStatus = document.createElement('div');
-      botStatus.textContent = `Bot Status: ${data.isOnline}`;
-      shardStatusDiv.appendChild(botStatus);
+      const statusSummary = document.getElementById('status-summary');
+      statusSummary.innerHTML = `
+        <h2>Service: Terumi</h2>
+        <p>Status: <span class="${data.serviceStatus.toLowerCase()}">${data.serviceStatus}</span></p>
+        <p>${data.totalShards} / ${data.totalShards} shards</p>
+        <p>${data.totalProblematicShards} / ${data.totalShards} clusters have problems.</p>
+      `;
+
+      // Apply dynamic color based on status
+      const serviceStatusElement = document.querySelector('.status-container span');
+      if (data.serviceStatus === 'Operational') {
+        serviceStatusElement.style.color = 'green';
+      } else if (data.serviceStatus === 'Partial Outage') {
+        serviceStatusElement.style.color = 'yellow';
+      } else if (data.serviceStatus === 'Major Outage') {
+        serviceStatusElement.style.color = 'red';
+      }
+    });
+
+    // Server lookup functionality
+    document.getElementById('lookup-btn').addEventListener('click', () => {
+      const serverId = document.getElementById('server-id-input').value;
+      if (serverId) {
+        fetch(`/api/server-status/${serverId}`).then(response => response.json()).then(data => {
+          document.getElementById('server-status').textContent = data.status;
+        }).catch(err => {
+          document.getElementById('server-status').textContent = 'Server not found or invalid ID.';
+        });
+      }
     });
   </script>
 </body>
