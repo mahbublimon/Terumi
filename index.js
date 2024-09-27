@@ -1,15 +1,15 @@
-require('dotenv').config(); // Load environment variables
-const { Client, GatewayIntentBits, Collection } = require('discord.js'); 
+require('dotenv').config();
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const axios = require('axios'); 
+const axios = require('axios');
 const session = require('express-session');
-const { Webhook } = require('@top-gg/sdk'); 
-const { client } = require('./bot'); 
-const connectDB = require('./database'); 
+const { Webhook } = require('@top-gg/sdk');
+const { client } = require('./bot'); // Import bot.js
+const connectDB = require('./database'); // Import database connection
 
 // Initialize Express App for Dashboard and Top.gg Webhooks
 const app = express();
@@ -26,26 +26,25 @@ app.use(session({
   cookie: { secure: process.env.NODE_ENV === 'production' },
 }));
 
-// Serve static files for the dashboard (HTML, CSS, JS)
+// Serve static files (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'src/dashboard/public')));
 
 // Import and use dashboard API routes
 const dashboardRoutes = require('./src/dashboard/routes/dashboard');
-app.use('/api', dashboardRoutes);
+app.use('/', dashboardRoutes); // Main router for all endpoints
 
-// Start the Express dashboard server with error handling
+// Start the server
 app.listen(PORT, (error) => {
   if (error) {
-    console.error(`Error starting dashboard server: ${error.message}`);
+    console.error(`Error starting server: ${error.message}`);
   } else {
-    console.log(`Dashboard running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
   }
 });
 
 // Top.gg Webhook Endpoint for receiving votes
 app.post('/topgg-webhook', topggWebhook.middleware(), async (req, res) => {
   const { user } = req.vote;
-
   const logChannelId = process.env.VOTE_LOG_CHANNEL_ID;
   const logChannel = client.channels.cache.get(logChannelId);
 
@@ -58,81 +57,7 @@ app.post('/topgg-webhook', topggWebhook.middleware(), async (req, res) => {
   res.status(200).send('Vote registered.');
 });
 
-// Route for Premium Page
-app.get('/premium', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src/dashboard/public/premium.html'));
-});
-
-// Route for Discord Authentication (OAuth2)
-app.get('/auth/discord', (req, res) => {
-  const clientId = process.env.DISCORD_CLIENT_ID;
-  const redirectUri = encodeURIComponent(process.env.REDIRECT_URI);
-
-  const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
-
-  res.redirect(discordAuthUrl);
-});
-
-// Route for handling the Discord OAuth2 callback
-app.get('/auth/discord/callback', async (req, res) => {
-  const { code } = req.query;
-  const redirectUri = process.env.REDIRECT_URI;
-  const clientId = process.env.DISCORD_CLIENT_ID;
-  const clientSecret = process.env.DISCORD_CLIENT_SECRET;
-
-  if (!code) {
-    return res.status(400).send('Authorization code not provided');
-  }
-
-  try {
-    // Exchange code for access token
-    const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: redirectUri,
-    }).toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
-
-    const { access_token } = tokenResponse.data;
-
-    // Use access token to fetch user data
-    const userResponse = await axios.get('https://discord.com/api/users/@me', {
-      headers: { Authorization: `Bearer ${access_token}` },
-    });
-
-    const user = userResponse.data;
-    req.session.user = user; // Store user data in session
-
-    res.redirect('/dashboard'); // Redirect after successful login
-  } catch (error) {
-    console.error('Error during Discord OAuth2 callback:', error.message);
-    res.status(500).send('Authentication failed');
-  }
-});
-
-// Route to serve the dashboard page
-app.get('/dashboard', (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/auth/discord'); // Redirect to login if not authenticated
-  }
-
-  res.send(`Welcome to your dashboard, ${req.session.user.username}!`);
-});
-
-// Route for logout
-app.get('/auth/logout', (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      return res.status(500).send('Failed to log out');
-    }
-    res.redirect('/'); // Redirect to home page or login
-  });
-});
-
-// Connect to MongoDB using the `database.js` file
+// Connect to MongoDB
 connectDB();
 
 // Bot ready event
@@ -142,7 +67,7 @@ client.once('ready', async () => {
   setPresence();
 });
 
-// Set bot presence (status message)
+// Set bot presence
 function setPresence() {
   if (client.guilds.cache.size > 0) {
     client.user.setActivity(`Serving ${client.guilds.cache.size} servers`, { type: 'WATCHING' });
@@ -151,7 +76,7 @@ function setPresence() {
   }
 }
 
-// Register Slash Commands globally or for specific guilds
+// Register slash commands globally
 async function registerSlashCommands() {
   const commandFolders = fs.readdirSync('./src/commands');
   const commands = [];
@@ -217,7 +142,7 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-// Log in to Discord using the bot token from .env
+// Log in to Discord
 client.login(process.env.TOKEN).catch((error) => {
   console.error('Failed to login:', error.message);
 });
