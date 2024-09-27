@@ -1,22 +1,8 @@
-const { Client, GatewayIntentBits, Collection, ShardingManager } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { incrementMessageCount } = require('./src/utils/messageCounter'); // Import the message counter
 require('dotenv').config();
 
-// Initialize Sharding Manager
-const manager = new ShardingManager('./bot.js', {
-  token: process.env.TOKEN,
-  totalShards: 'auto', // This will spawn the number of shards based on Discord's recommendation
-});
-
-// Spawn the shards
-manager.spawn();
-
-// Log when a shard is launched
-manager.on('shardCreate', shard => {
-  console.log(`Launched shard ${shard.id}`);
-});
-
-// Discord Client
+// Initialize Discord Client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -34,6 +20,17 @@ client.on('messageCreate', (message) => {
   }
 });
 
+// Catch and log errors to prevent unhandled promise rejections
+client.on('error', console.error);
+client.on('shardError', (error) => {
+  console.error(`Shard error: ${error.message}`);
+});
+
+// When a shard is ready, log a success message
+client.on('shardReady', (shardID) => {
+  console.log(`Shard ${shardID} is ready!`);
+});
+
 // Initialize command collection
 client.commands = new Collection();
 
@@ -41,7 +38,14 @@ client.once('ready', () => {
   console.log(`${client.user.tag} is online and ready!`);
 });
 
-// Login the client
-client.login(process.env.TOKEN);
+// Handle shard disconnects gracefully
+client.on('shardDisconnect', (event, shardID) => {
+  console.log(`Shard ${shardID} disconnected: ${event.reason}`);
+});
+
+// Login the client and handle promise rejection
+client.login(process.env.TOKEN).catch((error) => {
+  console.error(`Failed to login: ${error.message}`);
+});
 
 module.exports = { client };
