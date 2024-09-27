@@ -1,22 +1,22 @@
 require('dotenv').config(); // Load environment variables
-const { Client, GatewayIntentBits, Collection, Colors } = require('discord.js'); // Import necessary Discord.js classes
+const { Client, GatewayIntentBits, Collection } = require('discord.js'); 
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const express = require('express');
 const path = require('path');
-const fs = require('fs'); // Import fs module to handle file system operations
-const axios = require('axios'); // For handling Discord OAuth2 token and user fetch
-const session = require('express-session'); // For session management
-const { Webhook } = require('@top-gg/sdk'); // Top.gg SDK for vote tracking
-const { client } = require('./bot'); // Use the client exported from bot.js
-const connectDB = require('./database'); // Import the database connection function
+const fs = require('fs');
+const axios = require('axios'); 
+const session = require('express-session');
+const { Webhook } = require('@top-gg/sdk'); 
+const { client } = require('./bot'); 
+const connectDB = require('./database'); 
 
 // Initialize Express App for Dashboard and Top.gg Webhooks
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Top.gg webhook auth token from environment variables
-const topggWebhook = new Webhook(process.env.TOPGG_WEBHOOK_AUTH); // Use the token from the .env file
+const topggWebhook = new Webhook(process.env.TOPGG_WEBHOOK_AUTH);
 
 // Configure session middleware
 app.use(session({
@@ -46,7 +46,7 @@ app.listen(PORT, (error) => {
 app.post('/topgg-webhook', topggWebhook.middleware(), async (req, res) => {
   const { user } = req.vote;
 
-  const logChannelId = process.env.VOTE_LOG_CHANNEL_ID; // Log channel ID for storing votes
+  const logChannelId = process.env.VOTE_LOG_CHANNEL_ID;
   const logChannel = client.channels.cache.get(logChannelId);
 
   if (!logChannel) {
@@ -104,11 +104,8 @@ app.get('/auth/discord/callback', async (req, res) => {
     });
 
     const user = userResponse.data;
+    req.session.user = user; // Store user data in session
 
-    // Store user data in session
-    req.session.user = user;
-
-    // Redirect user to dashboard or home page
     res.redirect('/dashboard'); // Redirect after successful login
   } catch (error) {
     console.error('Error during Discord OAuth2 callback:', error.message);
@@ -158,7 +155,7 @@ function setPresence() {
 async function registerSlashCommands() {
   const commandFolders = fs.readdirSync('./src/commands');
   const commands = [];
-  const commandNames = new Set(); // Track command names to prevent duplicates
+  const commandNames = new Set();
 
   for (const folder of commandFolders) {
     const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
@@ -166,35 +163,31 @@ async function registerSlashCommands() {
     for (const file of commandFiles) {
       const command = require(`./src/commands/${folder}/${file}`);
 
-      // Ensure the command uses SlashCommandBuilder
       if (command.data && typeof command.data.toJSON === 'function' && command.execute) {
         if (commandNames.has(command.data.name)) {
           console.error(`Duplicate command name found: ${command.data.name}. Command will not be registered.`);
         } else {
-          client.commands.set(command.data.name, command); // Ensure commands are set into the collection
-          commands.push(command.data.toJSON()); // Prepare for registration
-          commandNames.add(command.data.name); // Track the registered command name
+          client.commands.set(command.data.name, command);
+          commands.push(command.data.toJSON());
+          commandNames.add(command.data.name);
           console.log(`Registered command: ${command.data.name}`);
         }
       } else {
-        console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property, or is not using SlashCommandBuilder.`);
+        console.error(`Command at ./src/commands/${folder}/${file} is missing "data" or "execute" property.`);
       }
     }
   }
 
-  // Use REST API to register the commands
   const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
   try {
     console.log('Started refreshing application (/) commands.');
 
     if (process.env.GUILD_ID) {
-      // If a GUILD_ID is provided, register commands for a specific guild
       await rest.put(
         Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID),
         { body: commands },
       );
     } else {
-      // Register commands globally
       await rest.put(
         Routes.applicationCommands(client.user.id),
         { body: commands },
