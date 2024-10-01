@@ -1,5 +1,4 @@
 require('dotenv').config(); // Load environment variables
-const { Client, GatewayIntentBits, Collection } = require('discord.js'); // Import necessary Discord.js classes
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const express = require('express');
