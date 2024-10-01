@@ -13,6 +13,9 @@ const client = new Client({
   ],
 });
 
+// Initialize command collection
+client.commands = new Collection();
+
 // Listen to the messageCreate event to increment the message count
 client.on('messageCreate', (message) => {
   if (!message.author.bot) {
@@ -20,7 +23,7 @@ client.on('messageCreate', (message) => {
   }
 });
 
-// Catch and log errors to prevent unhandled promise rejections
+// Log and handle errors to prevent unhandled promise rejections
 client.on('error', console.error);
 client.on('shardError', (error) => {
   console.error(`Shard error: ${error.message}`);
@@ -31,16 +34,40 @@ client.on('shardReady', (shardID) => {
   console.log(`Shard ${shardID} is ready!`);
 });
 
-// Initialize command collection
-client.commands = new Collection();
-
+// Event listener when the bot is ready
 client.once('ready', () => {
   console.log(`${client.user.tag} is online and ready!`);
 });
 
-// Handle shard disconnects gracefully
+// Handle shard disconnects and log the reason
 client.on('shardDisconnect', (event, shardID) => {
   console.log(`Shard ${shardID} disconnected: ${event.reason}`);
+});
+
+// Handle shard reconnect attempts
+client.on('shardReconnecting', (shardID) => {
+  console.log(`Shard ${shardID} is attempting to reconnect...`);
+});
+
+// Handle command interactions (Slash commands)
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isCommand()) return;
+
+  const command = client.commands.get(interaction.commandName);
+
+  if (!command) {
+    return interaction.reply({ content: 'Unknown command!', ephemeral: true });
+  }
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(`Error executing command ${interaction.commandName}:`, error);
+    await interaction.reply({
+      content: 'There was an error executing this command!',
+      ephemeral: true,
+    });
+  }
 });
 
 // Login the client and handle promise rejection
